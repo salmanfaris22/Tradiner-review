@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Mentor Rating | മെന്റർ റേറ്റിംഗ്</title>
+<title>Trainer Rating | ട്രെയിനർ റേറ്റിംഗ്</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -345,7 +345,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding:22px 10px 6px
         </span>
         <span class="wm">me</span>
       </span>
-      <div class="brand"><p>Mentor Rating</p></div>
+      <div class="brand"><p>Trainer Rating</p></div>
     </div>
     <div class="progress-wrap" id="progWrap">
       <span class="step-num" id="stepNum">1 / 9</span>
@@ -359,12 +359,12 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding:22px 10px 6px
   <section class="screen active" id="scIntro">
     <div class="glass hero">
       <span class="pill"><span class="dot"></span> <span>No name required · Fully anonymous</span></span>
-      <h2>Rate your <span class="grad">mentor</span></h2>
-      <p class="sub">Pick the mentor who fits best for each question.
+      <h2>Rate your <span class="grad">trainer</span></h2>
+      <p class="sub">Pick the trainer who fits best for each question.
       Your answers help our team get better.</p>
 
       <div class="meta-row">
-        <div class="meta"><b id="mCount">0</b><span>Mentors</span></div>
+        <div class="meta"><b id="mCount">0</b><span>Trainers</span></div>
         <div class="meta"><b id="qCount">4</b><span>Questions</span></div>
         <div class="meta"><b>1 min</b><span>That's all</span></div>
       </div>
@@ -389,11 +389,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding:22px 10px 6px
     <div class="glass q-card">
       <span class="q-tag" id="qTag">Question 1</span>
       <h2 class="q-title ml" id="qTitle"></h2>
-      <p class="q-hint">Select one mentor</p>
+      <p class="q-hint">Select one trainer</p>
 
       <div class="search">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
-        <input id="inSearch" placeholder="Search mentor…" />
+        <input id="inSearch" placeholder="Search trainer…" />
       </div>
 
       <div class="grid" id="grid"></div>
@@ -450,7 +450,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding:22px 10px 6px
 /* 1️⃣  Apps Script deploy ചെയ്തശേഷം കിട്ടുന്ന Web App URL ഇവിടെ ഒട്ടിക്കുക */
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwT76wasY01kn3axHWH7b_PRLpm8qDXX6BCDsJ_fQ-qKwuG-zFeEIa6sXZOsOMM-f4/exec";
 
-/* 2️⃣  മെന്റർ ലിസ്റ്റ് — പേര് മാത്രം എഴുതിയാൽ മതി.
+/* 2️⃣  ട്രെയിനർ ലിസ്റ്റ് — പേര് മാത്രം എഴുതിയാൽ മതി.
    📸 ഫോട്ടോ:  images/ ഫോൾഡറിൽ  മെന്ററുടെ പേരിൽ  ഇടുക →  images/Rahoof.jpg
       ഫയലിന്റെ പേര് = ഇവിടെ എഴുതിയ പേര്.  jpg / jpeg / png / webp ഏതും ആകാം.
       വലിയക്ഷരം-ചെറിയക്ഷരം നോക്കേണ്ട (rahoof.png ആയാലും ശരി),
@@ -459,7 +459,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwT76wasY01kn3axHWH7
    ഫോട്ടോ ഇല്ലെങ്കിൽ പേരിന്റെ ആദ്യാക്ഷരം കൊണ്ടുള്ള avatar താനേ വരും.
    വേറെ ലിങ്ക് വേണമെങ്കിൽ മാത്രം: { name:"Rahoof", img:"https://..." }
    ⚠️ blob:https://... ലിങ്കുകൾ വർക്ക് ചെയ്യില്ല (അവ ടെമ്പററി ആണ്) */
-const MENTORS = [
+const TRAINERS = [                 // ഇവിടെ പേരുകൾ ചേർക്കുക / മാറ്റുക
   "Abdu Rahoof",
   "Abdul Samad",
   "Ajmal",
@@ -493,14 +493,14 @@ const LOGO_CANDIDATES = ["images/logo.svg","images/logo.png","images/logo.jpg",
 
 const IMAGE_DIR  = "images/";                                   // ഫോട്ടോ ഫോൾഡർ
 const IMAGE_EXTS = ["jpg","jpeg","png","webp","JPG","PNG"];     // പരീക്ഷിക്കുന്ന എക്സ്റ്റൻഷനുകൾ
-const DEFAULT_ROLE = "Mentor";                                  // കാർഡിൽ പേരിന് താഴെ വരുന്ന വാക്ക്
+const DEFAULT_ROLE = "Trainer";                                 // കാർഡിൽ പേരിന് താഴെ വരുന്ന വാക്ക്
 
 /* 5️⃣  ചോദ്യങ്ങൾ (Google Sheet-ൽ ഇതേ ക്രമത്തിൽ കോളം വരും) */
 const QUESTIONS = [
-  { key:"q1", text:"നിങ്ങൾക്ക് ഏറ്റവും എളുപ്പത്തിൽ സമീപിക്കാനാകുന്ന മെന്റർ ആരാണ്?" },
-  { key:"q2", text:"വിഷയങ്ങൾ ഏറ്റവും വ്യക്തമായി മനസ്സിലാകുന്ന രീതിയിൽ വിശദീകരിക്കുന്ന മെന്റർ ആരാണ്?" },
-  { key:"q3", text:"ക്ഷമയോടെ നിങ്ങളുടെ സംശയങ്ങൾ കേട്ട് പരിഹരിക്കുന്ന മെന്റർ ആരാണ്?" },
-  { key:"q4", text:"നിങ്ങളെ തുടർച്ചയായി മുന്നോട്ട് പോകാൻ പ്രോത്സാഹിപ്പിക്കുന്ന മെന്റർ ആരാണ്?" }
+  { key:"q1", text:"നിങ്ങൾക്ക് ഏറ്റവും എളുപ്പത്തിൽ സമീപിക്കാനാകുന്ന ട്രെയിനർ ആരാണ്?" },
+  { key:"q2", text:"വിഷയങ്ങൾ ഏറ്റവും വ്യക്തമായി മനസ്സിലാകുന്ന രീതിയിൽ വിശദീകരിക്കുന്ന ട്രെയിനർ ആരാണ്?" },
+  { key:"q3", text:"ക്ഷമയോടെ നിങ്ങളുടെ സംശയങ്ങൾ കേട്ട് പരിഹരിക്കുന്ന ട്രെയിനർ ആരാണ്?" },
+  { key:"q4", text:"നിങ്ങളെ തുടർച്ചയായി മുന്നോട്ട് പോകാൻ പ്രോത്സാഹിപ്പിക്കുന്ന ട്രെയിനർ ആരാണ്?" }
 ];
 
 /* ============================================================
@@ -518,8 +518,8 @@ const gradOf   = n => AVA[[...n].reduce((a,c)=>a+c.charCodeAt(0),0)%AVA.length];
 const initials = n => n.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase();
 const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
-/* മെന്റർ ലിസ്റ്റ് ഏകീകരിക്കുന്നു: "Rahoof"  →  {name, role, img} */
-const ROSTER = MENTORS.map(m => typeof m === "string"
+/* ട്രെയിനർ ലിസ്റ്റ് ഏകീകരിക്കുന്നു: "Rahoof"  →  {name, role, img} */
+const ROSTER = TRAINERS.map(m => typeof m === "string"
   ? { name:m.trim(), role:DEFAULT_ROLE, img:"" }
   : { name:String(m.name||"").trim(), role:m.role||DEFAULT_ROLE, img:m.img||"" });
 
@@ -627,7 +627,7 @@ function renderQuestion(filter=""){
       <div class="nm">${esc(m.name)}</div>
       <div class="rl">${esc(m.role||"")}</div>
     </div>`).join("")
-    : `<div class="empty">No mentor found for "${esc(filter)}"</div>`;
+    : `<div class="empty">No trainer found for "${esc(filter)}"</div>`;
 
   grid.querySelectorAll(".mentor").forEach(el=>{
     el.addEventListener("click",()=>{
@@ -655,7 +655,7 @@ function refreshFoot(){
 }
 
 function next(){
-  if(!state.answers[QUESTIONS[state.step].key]){ toast("Please select a mentor"); return; }
+  if(!state.answers[QUESTIONS[state.step].key]){ toast("Please select a trainer"); return; }
   if(state.step < QUESTIONS.length-1){
     state.step++; $("#inSearch").value = ""; renderQuestion(); show("#scQ","next");
   }else{

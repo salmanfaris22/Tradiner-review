@@ -1,9 +1,9 @@
-📸 മെന്റർ ഫോട്ടോകൾ ഇവിടെ ഇടുക
+📸 ട്രെയിനർ ഫോട്ടോകൾ ഇവിടെ ഇടുക
 ================================
 
-നിയമം ഒന്നേയുള്ളൂ:  ഫയലിന്റെ പേര് = index.html-ലെ MENTORS ലിസ്റ്റിലെ പേര്
+നിയമം ഒന്നേയുള്ളൂ:  ഫയലിന്റെ പേര് = index.html-ലെ TRAINERS ലിസ്റ്റിലെ പേര്
 
-  MENTORS = [ "Rahoof", "Samad", "Abdul Basith" ]
+  TRAINERS = [ "Rahoof", "Samad", "Abdul Basith" ]
        ↓
   images/Rahoof.jpg
   images/Samad.jpg

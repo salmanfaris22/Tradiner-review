@@ -1,6 +1,6 @@
 /**
  * ============================================================
- *  MENTOR RATING → GOOGLE SHEET  (Google Apps Script)
+ *  TRAINER RATING → GOOGLE SHEET  (Google Apps Script)
  * ============================================================
  *  സെറ്റപ്പ്:
  *   1. Google Sheet ഉണ്ടാക്കുക → Extensions ▸ Apps Script
@@ -20,10 +20,10 @@ var SUMMARY_NAME = 'Summary';
 
 /** ചോദ്യങ്ങൾ — index.html-ലെ QUESTIONS-ന്റെ അതേ key/ക്രമം */
 var QUESTIONS = [
-  { key: 'q1', text: 'എളുപ്പത്തിൽ സമീപിക്കാനാകുന്ന മെന്റർ' },
-  { key: 'q2', text: 'വ്യക്തമായി വിശദീകരിക്കുന്ന മെന്റർ' },
-  { key: 'q3', text: 'ക്ഷമയോടെ സംശയം പരിഹരിക്കുന്ന മെന്റർ' },
-  { key: 'q4', text: 'മുന്നോട്ട് പോകാൻ പ്രോത്സാഹിപ്പിക്കുന്ന മെന്റർ' }
+  { key: 'q1', text: 'എളുപ്പത്തിൽ സമീപിക്കാനാകുന്ന ട്രെയിനർ' },
+  { key: 'q2', text: 'വ്യക്തമായി വിശദീകരിക്കുന്ന ട്രെയിനർ' },
+  { key: 'q3', text: 'ക്ഷമയോടെ സംശയം പരിഹരിക്കുന്ന ട്രെയിനർ' },
+  { key: 'q4', text: 'മുന്നോട്ട് പോകാൻ പ്രോത്സാഹിപ്പിക്കുന്ന ട്രെയിനർ' }
 ];
 
 
@@ -137,7 +137,7 @@ function buildTally_() {
 
 function sortCounts_(obj) {
   return Object.keys(obj)
-    .map(function (k) { return { mentor: k, votes: obj[k] }; })
+    .map(function (k) { return { trainer: k, votes: obj[k] }; })
     .sort(function (a, b) { return b.votes - a.votes; });
 }
 
@@ -158,18 +158,18 @@ function buildSummarySheet() {
   sh.clear();
 
   var tally = buildTally_();
-  var rows  = [['ചോദ്യം', 'മെന്റർ', 'വോട്ട്']];
+  var rows  = [['ചോദ്യം', 'ട്രെയിനർ', 'വോട്ട്']];
 
   rows.push(['— ആകെ റെസ്പോൺസ് —', tally.totalResponses, '']);
   rows.push(['', '', '']);
 
   rows.push(['★ OVERALL (എല്ലാ ചോദ്യങ്ങളും ചേർത്ത്)', '', '']);
-  tally.overall.forEach(function (o) { rows.push(['', o.mentor, o.votes]); });
+  tally.overall.forEach(function (o) { rows.push(['', o.trainer, o.votes]); });
   rows.push(['', '', '']);
 
   tally.questions.forEach(function (q) {
     rows.push([q.text, '', '']);
-    q.results.forEach(function (r) { rows.push(['', r.mentor, r.votes]); });
+    q.results.forEach(function (r) { rows.push(['', r.trainer, r.votes]); });
     rows.push(['', '', '']);
   });
 
@@ -181,10 +181,10 @@ function buildSummarySheet() {
   SpreadsheetApp.getUi().alert('Summary ഷീറ്റ് അപ്ഡേറ്റ് ചെയ്തു ✅');
 }
 
-/** ഷീറ്റിൽ ഒരു മെനു — Mentor Rating ▸ Refresh Summary */
+/** ഷീറ്റിൽ ഒരു മെനു — Trainer Rating ▸ Refresh Summary */
 function onOpen() {
   SpreadsheetApp.getUi()
-    .createMenu('Mentor Rating')
+    .createMenu('Trainer Rating')
     .addItem('📊 Refresh Summary', 'buildSummarySheet')
     .addToUi();
 }

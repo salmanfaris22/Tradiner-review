@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Mentor Rating | മെന്റർ റേറ്റിംഗ്</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ROOTME THEME
+============================================================ */
+:root{
+  --bg:#0b0b0e;
+  --bg2:#131319;
+  --card:rgba(255,255,255,.05);
+  --card-hi:rgba(255,255,255,.10);
+  --stroke:rgba(255,255,255,.10);
+  --stroke-hi:rgba(255,196,0,.45);
+  --txt:#f5f3ee;
+  --muted:#9d9a92;
+  --amber:#ffc400;      /* rootme yellow */
+  --amber2:#ffdd55;
+  --amber3:#ff9d00;
+  --ink:#141318;
+  --ok:#ffc400;
+  --r:24px;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:'Outfit','Noto Sans Malayalam',system-ui,sans-serif;
+  background:var(--bg);color:var(--txt);
+  min-height:100dvh;overflow-x:hidden;
+  display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+:lang(ml),.ml{font-family:'Noto Sans Malayalam','Outfit',sans-serif;line-height:1.65}
+
+/* ---------- background ---------- */
+.bg{position:fixed;inset:0;z-index:-2;overflow:hidden;background:
+  radial-gradient(1100px 640px at 84% -12%,#3a2c00 0%,transparent 62%),
+  radial-gradient(900px 560px at -12% 104%,#2a1d00 0%,transparent 60%),
+  linear-gradient(180deg,var(--bg),var(--bg2));}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.30;animation:float 20s var(--ease) infinite alternate}
+.orb.a{width:46vw;height:46vw;background:#ffc400;top:-14vw;left:-10vw}
+.orb.b{width:40vw;height:40vw;background:#ff9d00;bottom:-16vw;right:-12vw;animation-duration:24s}
+.orb.c{width:30vw;height:30vw;background:#ffe37a;top:44%;left:58%;animation-duration:28s;opacity:.14}
+@keyframes float{to{transform:translate3d(6vw,-5vw,0) scale(1.16)}}
+.grain{position:fixed;inset:0;z-index:-1;opacity:.04;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ============================================================
+   SHELL
+============================================================ */
+.wrap{width:min(1080px,100%);margin:0 auto;padding:20px 18px 36px;flex:1;display:flex;flex-direction:column}
+
+header.top{display:flex;align-items:center;gap:12px;padding:8px 2px 20px}
+.logo{display:flex;align-items:center;gap:10px}
+#logoImg{height:38px;width:auto;max-width:190px;object-fit:contain;
+  animation:avaIn .45s var(--ease) both}
+#logoImg[hidden]{display:none}          /* src വരുന്നതുവരെ പൂർണ്ണമായി മറയ്ക്കുക */
+.logo-fb{display:flex;align-items:center;gap:8px}
+.logo .knot{width:38px;height:38px;border-radius:12px;background:var(--amber);display:grid;place-items:center;
+  box-shadow:0 8px 24px rgba(255,196,0,.35)}
+.logo .knot svg{width:23px;height:23px}
+.logo .wm{font-size:27px;font-weight:800;letter-spacing:-1.4px;color:var(--amber);line-height:1}
+.brand p{font-size:11.5px;color:var(--muted);letter-spacing:.3px;
+  padding-left:11px;margin-left:1px;border-left:1px solid var(--stroke)}
+
+.progress-wrap{margin-left:auto;display:flex;align-items:center;gap:12px;opacity:0;transform:translateY(-6px);
+  transition:.5s var(--ease);pointer-events:none}
+.progress-wrap.show{opacity:1;transform:none}
+.bar{width:clamp(90px,22vw,220px);height:7px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}
+.bar i{display:block;height:100%;width:0%;border-radius:99px;
+  background:linear-gradient(90deg,var(--amber3),var(--amber2));
+  box-shadow:0 0 16px rgba(255,196,0,.6);transition:width .55s var(--ease)}
+.step-num{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ============================================================
+   SLIDE SECTIONS
+============================================================ */
+.deck{position:relative;flex:1}
+.screen{display:none}
+.screen.active{display:block}
+.screen.in-next{animation:slideInNext .55s var(--ease) both}
+.screen.in-prev{animation:slideInPrev .55s var(--ease) both}
+.screen.out-next{animation:slideOutNext .32s var(--ease) both;position:absolute;inset:0}
+.screen.out-prev{animation:slideOutPrev .32s var(--ease) both;position:absolute;inset:0}
+@keyframes slideInNext {from{opacity:0;transform:translateX(64px)  scale(.985)}to{opacity:1;transform:none}}
+@keyframes slideInPrev {from{opacity:0;transform:translateX(-64px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes slideOutNext{to{opacity:0;transform:translateX(-64px) scale(.985)}}
+@keyframes slideOutPrev{to{opacity:0;transform:translateX(64px)  scale(.985)}}
+
+.glass{background:var(--card);border:1px solid var(--stroke);border-radius:var(--r);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:0 24px 60px rgba(0,0,0,.5)}
+
+/* ---------- intro ---------- */
+.hero{padding:clamp(28px,5vw,58px);text-align:center;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:-2px;border-radius:var(--r);pointer-events:none;
+  background:linear-gradient(120deg,transparent 30%,rgba(255,196,0,.10) 45%,transparent 60%);
+  background-size:250% 100%;animation:sheen 6s linear infinite}
+@keyframes sheen{to{background-position:-250% 0}}
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;letter-spacing:.4px;
+  padding:8px 16px;border-radius:99px;border:1px solid rgba(255,196,0,.28);background:rgba(255,196,0,.08);color:var(--amber2)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 0 0 rgba(255,196,0,.6);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 9px rgba(255,196,0,0)}100%{box-shadow:0 0 0 0 rgba(255,196,0,0)}}
+.hero h2{font-size:clamp(28px,5.4vw,46px);font-weight:700;margin:20px 0 14px;line-height:1.3}
+.grad{background:linear-gradient(100deg,var(--amber2),var(--amber) 45%,var(--amber3));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.sub{color:var(--muted);font-size:clamp(14px,2.4vw,17px);max-width:620px;margin:0 auto}
+
+.meta-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:32px auto 30px;max-width:660px}
+.meta{padding:16px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--stroke);text-align:left}
+.meta b{display:block;font-size:23px;font-weight:700;color:var(--amber)}
+.meta span{font-size:12.5px;color:var(--muted)}
+
+/* ---------- batch / space chips ---------- */
+.pickers{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:660px;margin:0 auto 28px;text-align:left}
+.pick h4{font-size:11.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:10px}
+.pick .req{color:var(--amber)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:inherit;font-size:13.5px;font-weight:500;color:var(--txt);cursor:pointer;
+  padding:11px 16px;border-radius:12px;background:rgba(255,255,255,.05);
+  border:1px solid var(--stroke);transition:.25s var(--ease);white-space:nowrap}
+.chip:hover{background:var(--card-hi);border-color:var(--stroke-hi);transform:translateY(-2px)}
+.chip:active{transform:scale(.96)}
+.chip.sel{background:linear-gradient(130deg,var(--amber2),var(--amber));color:var(--ink);
+  border-color:transparent;font-weight:600;box-shadow:0 8px 22px rgba(255,196,0,.32)}
+.who{font-size:12.5px;color:var(--muted);margin-top:10px}
+.who b{color:var(--amber);font-weight:600}
+
+/* ---------- buttons ---------- */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  padding:16px 34px;border-radius:99px;border:0;cursor:pointer;font-family:inherit;font-size:15.5px;font-weight:600;
+  color:var(--ink);background:linear-gradient(120deg,var(--amber2),var(--amber) 55%,var(--amber3));
+  box-shadow:0 14px 34px rgba(255,196,0,.30);transition:.28s var(--ease);overflow:hidden}
+.btn:hover{transform:translateY(-3px);box-shadow:0 20px 46px rgba(255,196,0,.42)}
+.btn:active{transform:translateY(0) scale(.97)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;filter:grayscale(.5)}
+.btn.ghost{background:rgba(255,255,255,.06);color:var(--txt);border:1px solid var(--stroke);box-shadow:none;padding:13px 22px;font-size:14px}
+.btn.ghost:hover{background:rgba(255,255,255,.12);transform:translateY(-2px)}
+.btn .spin{width:17px;height:17px;border-radius:50%;border:2.5px solid rgba(0,0,0,.22);border-top-color:var(--ink);
+  animation:spin .7s linear infinite;display:none}
+.btn.loading .spin{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- question ---------- */
+.q-card{padding:clamp(20px,3.4vw,34px)}
+.q-tag{display:inline-block;font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--amber);
+  padding:6px 13px;border-radius:99px;background:rgba(255,196,0,.10);border:1px solid rgba(255,196,0,.26)}
+.q-title{font-size:clamp(19px,3.2vw,27px);font-weight:600;margin:16px 0 6px}
+.q-hint{color:var(--muted);font-size:13.5px}
+
+.search{margin:20px 0 6px;position:relative}
+.search input{width:100%;padding:14px 16px 14px 46px;border-radius:14px;font-size:14.5px;font-family:inherit;
+  background:rgba(255,255,255,.05);border:1px solid var(--stroke);color:var(--txt);outline:none;transition:.25s var(--ease)}
+.search input:focus{border-color:var(--stroke-hi);background:rgba(255,255,255,.08);box-shadow:0 0 0 4px rgba(255,196,0,.14)}
+.search svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);opacity:.5}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:13px;margin-top:16px;
+  max-height:min(56vh,520px);overflow-y:auto;padding:4px 6px 14px 4px;scrollbar-width:thin;
+  scrollbar-color:rgba(255,196,0,.35) transparent;
+  /* താഴെ ഇനിയും കാർഡുകൾ ഉണ്ടെന്ന് കാണിക്കാൻ fade */
+  -webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 34px),transparent 100%);
+          mask-image:linear-gradient(180deg,#000 calc(100% - 34px),transparent 100%)}
+.grid.at-end{-webkit-mask-image:none;mask-image:none}
+.grid::-webkit-scrollbar{width:6px}
+.grid::-webkit-scrollbar-thumb{background:rgba(255,196,0,.35);border-radius:99px}
+
+.mentor{position:relative;cursor:pointer;border-radius:18px;padding:16px 12px 14px;text-align:center;
+  background:rgba(255,255,255,.04);border:1px solid var(--stroke);
+  transition:transform .3s var(--ease),background .3s,border-color .3s,box-shadow .3s;
+  animation:pop .45s var(--ease) both;overflow:hidden}
+@keyframes pop{from{opacity:0;transform:translateY(16px) scale(.94)}to{opacity:1;transform:none}}
+.mentor:hover{transform:translateY(-5px);background:var(--card-hi);border-color:var(--stroke-hi);
+  box-shadow:0 16px 34px rgba(0,0,0,.45)}
+.mentor .ava{width:64px;height:64px;border-radius:50%;margin:0 auto 11px;overflow:hidden;position:relative;
+  display:grid;place-items:center;font-size:22px;font-weight:700;color:var(--ink);
+  box-shadow:0 0 0 2px rgba(255,255,255,.12),0 8px 20px rgba(0,0,0,.45);transition:.3s var(--ease)}
+.mentor .ava img{width:100%;height:100%;object-fit:cover;display:block}
+.ava img.fade-in{animation:avaIn .4s var(--ease) both}
+@keyframes avaIn{from{opacity:0;transform:scale(1.12)}to{opacity:1;transform:none}}
+.mentor:hover .ava{transform:scale(1.07)}
+.mentor .nm{font-size:14.5px;font-weight:600;line-height:1.35}
+.mentor .rl{font-size:11.5px;color:var(--muted);margin-top:3px}
+.mentor .tick{position:absolute;top:9px;right:9px;width:24px;height:24px;border-radius:50%;
+  background:var(--amber);display:grid;place-items:center;transform:scale(0);transition:transform .35s var(--ease)}
+.mentor .tick svg{width:13px;height:13px}
+.mentor.sel{background:linear-gradient(160deg,rgba(255,196,0,.22),rgba(255,157,0,.08));
+  border-color:rgba(255,196,0,.8);box-shadow:0 0 0 1px rgba(255,196,0,.5),0 18px 40px rgba(255,196,0,.18)}
+.mentor.sel .tick{transform:scale(1)}
+.mentor.sel .ava{box-shadow:0 0 0 2.5px var(--amber),0 10px 24px rgba(255,196,0,.35)}
+
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:30px 10px;font-size:14px}
+
+.q-foot{display:flex;align-items:center;gap:12px;margin-top:22px;flex-wrap:wrap}
+.q-foot .sp{margin-left:auto}
+.picked{font-size:13px;color:var(--muted)}
+.picked b{color:var(--amber)}
+
+/* ---------- review ---------- */
+.review-list{display:grid;gap:10px;margin-top:18px;max-height:46vh;overflow-y:auto;padding-right:6px}
+.rv{display:flex;align-items:center;gap:13px;padding:12px 14px;border-radius:15px;
+  background:rgba(255,255,255,.04);border:1px solid var(--stroke);animation:pop .4s var(--ease) both}
+.rv .ava{width:40px;height:40px;border-radius:50%;overflow:hidden;flex:0 0 auto;display:grid;place-items:center;
+  font-weight:700;font-size:15px;color:var(--ink)}
+.rv .ava img{width:100%;height:100%;object-fit:cover}
+.rv .txt{flex:1;min-width:0}
+.rv .txt p{font-size:12.5px;color:var(--muted);line-height:1.5}
+.rv .txt b{font-size:14.5px;color:var(--amber)}
+.rv button{background:none;border:0;color:var(--amber);cursor:pointer;font-family:inherit;font-size:12.5px;
+  padding:7px 11px;border-radius:9px;transition:.2s}
+.rv button:hover{background:rgba(255,196,0,.14)}
+
+/* ---------- thank you ---------- */
+.thanks{text-align:center;padding:clamp(34px,6vw,64px) 24px}
+.check{width:96px;height:96px;margin:0 auto 24px;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--amber2),var(--amber3));box-shadow:0 0 0 0 rgba(255,196,0,.5);
+  animation:ring 2.2s infinite,dropIn .7s var(--ease) both}
+@keyframes ring{70%{box-shadow:0 0 0 34px rgba(255,196,0,0)}100%{box-shadow:0 0 0 0 rgba(255,196,0,0)}}
+@keyframes dropIn{0%{transform:scale(.3) translateY(-40px);opacity:0}60%{transform:scale(1.12)}100%{transform:none;opacity:1}}
+.check svg{width:46px;height:46px}
+.check path{stroke-dasharray:48;stroke-dashoffset:48;animation:draw .6s .45s var(--ease) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.thanks h2{font-size:clamp(26px,5vw,40px);font-weight:700;margin-bottom:12px}
+.thanks p{color:var(--muted);max-width:480px;margin:0 auto 26px}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:60}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,160px);opacity:0;visibility:hidden;z-index:80;
+  padding:14px 22px;border-radius:14px;font-size:14px;background:rgba(28,22,4,.95);
+  border:1px solid rgba(255,196,0,.5);color:#ffe9a8;backdrop-filter:blur(10px);
+  box-shadow:0 18px 40px rgba(0,0,0,.55);transition:.45s var(--ease);max-width:90vw;text-align:center}
+.toast.show{transform:translate(-50%,0);opacity:1;visibility:visible}
+
+footer{text-align:center;font-size:12px;color:var(--muted);padding:22px 10px 6px;opacity:.7}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media(max-width:900px){
+  .wrap{padding:16px 14px 28px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(132px,1fr))}
+}
+
+/* ---- tablet / large phone ---- */
+@media(max-width:640px){
+  :root{--r:20px}
+  header.top{padding:6px 2px 14px;gap:10px}
+  .logo .knot{width:34px;height:34px;border-radius:11px}
+  .logo .wm{font-size:23px}
+  .brand p{font-size:10.5px}
+  .bar{width:clamp(70px,26vw,150px);height:6px}
+  .step-num{font-size:12px}
+
+  .hero{padding:26px 18px 28px}
+  .hero h2{font-size:26px;margin:16px 0 10px}
+  .hero p.sub{font-size:14.5px}
+  .pill{font-size:11.5px;padding:7px 13px}
+  .meta-row{grid-template-columns:repeat(3,1fr);gap:8px;margin:24px auto 24px}
+  .meta{padding:12px 10px;text-align:center;border-radius:14px}
+  .meta b{font-size:19px}
+  .meta span{font-size:10.5px;display:block;line-height:1.4}
+
+  .pickers{grid-template-columns:1fr;gap:14px;margin-bottom:22px}
+  .chips{gap:7px}
+  .chip{flex:1 1 calc(50% - 4px);text-align:center;padding:12px 8px;font-size:13px}
+  .q-card{padding:20px 16px 22px}
+  .q-title{font-size:19px;margin:13px 0 5px}
+  .search input{padding:13px 14px 13px 42px;font-size:14px}
+
+  .grid{grid-template-columns:repeat(3,1fr);gap:9px;max-height:none;overflow:visible;padding:2px}
+  .mentor{padding:13px 7px 11px;border-radius:15px}
+  .mentor .ava{width:52px;height:52px;font-size:18px;margin-bottom:8px}
+  .mentor .nm{font-size:12.5px}
+  .mentor .rl{font-size:10px}
+  .mentor .tick{width:20px;height:20px;top:6px;right:6px}
+  .mentor:hover{transform:none}          /* touch → hover lift വേണ്ട */
+  .mentor:active{transform:scale(.95)}
+
+  .review-list{max-height:none;overflow:visible;padding-right:0}
+  .rv{padding:11px;gap:10px;border-radius:14px}
+  .rv .ava{width:34px;height:34px;font-size:13px}
+  .rv .txt p{font-size:11.5px}
+  .rv .txt b{font-size:13.5px}
+  .rv button{font-size:11.5px;padding:6px 8px}
+
+  .thanks{padding:36px 18px}
+  .check{width:78px;height:78px;margin-bottom:18px}
+  .check svg{width:38px;height:38px}
+  .thanks h2{font-size:27px}
+  .thanks p{font-size:14px}
+
+  /* footer buttons: sticky action bar feel */
+  .q-foot{margin-top:18px;gap:9px}
+  .picked{order:-1;width:100%;text-align:center;font-size:12.5px}
+  .q-foot .sp{display:none}
+  .btn{flex:1;padding:15px 16px;font-size:15px}
+  .btn.ghost{flex:0 0 auto;padding:15px 18px}
+  #btnStart{width:100%}
+  footer{font-size:11px;padding:18px 10px 4px}
+}
+
+/* ---- small phone ---- */
+@media(max-width:380px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .hero h2{font-size:23px}
+  .meta-row{grid-template-columns:repeat(3,1fr)}
+  .meta b{font-size:17px}
+  .q-title{font-size:17.5px}
+}
+
+/* ---- landscape phone ---- */
+@media(max-height:480px) and (orientation:landscape){
+  .grid{max-height:none;overflow:visible;grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+  .hero{padding:22px 18px}
+  .orb{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="bg"><div class="orb a"></div><div class="orb b"></div><div class="orb c"></div></div>
+<div class="grain"></div>
+<canvas id="confetti"></canvas>
+
+<div class="wrap">
+  <header class="top">
+    <div class="logo">
+      <!-- യഥാർത്ഥ ലോഗോ: images/logo.png ഇട്ടാൽ താഴെയുള്ളത് മാറി അത് വരും -->
+      <img id="logoImg" alt="rootme" hidden>
+      <span id="logoFallback" class="logo-fb">
+        <span class="knot">
+          <svg viewBox="0 0 32 32" fill="none" stroke="#141318" stroke-width="4.6" stroke-linecap="round">
+            <circle cx="11" cy="20" r="5"/><circle cx="21" cy="12" r="5"/>
+            <path d="M14.6 16.6 17.4 15.4"/>
+          </svg>
+        </span>
+        <span class="wm">me</span>
+      </span>
+      <div class="brand"><p>Mentor Rating</p></div>
+    </div>
+    <div class="progress-wrap" id="progWrap">
+      <span class="step-num" id="stepNum">1 / 9</span>
+      <div class="bar"><i id="bar"></i></div>
+    </div>
+  </header>
+
+  <div class="deck">
+
+  <!-- ========== SLIDE 1 : INTRO + BATCH & SPACE ========== -->
+  <section class="screen active" id="scIntro">
+    <div class="glass hero">
+      <span class="pill"><span class="dot"></span> <span>No name required · Fully anonymous</span></span>
+      <h2>Rate your <span class="grad">mentor</span></h2>
+      <p class="sub">Pick the mentor who fits best for each question.
+      Your answers help our team get better.</p>
+
+      <div class="meta-row">
+        <div class="meta"><b id="mCount">0</b><span>Mentors</span></div>
+        <div class="meta"><b id="qCount">4</b><span>Questions</span></div>
+        <div class="meta"><b>1 min</b><span>That's all</span></div>
+      </div>
+
+      <div class="pickers">
+        <div class="pick">
+          <h4>Your batch <span class="req">*</span></h4>
+          <div class="chips" id="batchChips"></div>
+        </div>
+        <div class="pick">
+          <h4>Your space <span class="req">*</span></h4>
+          <div class="chips" id="spaceChips"></div>
+        </div>
+      </div>
+
+      <button class="btn" id="btnStart"><span>Start</span> <span>&rarr;</span></button>
+    </div>
+  </section>
+
+  <!-- ========== SLIDE 2 : QUESTION ========== -->
+  <section class="screen" id="scQ">
+    <div class="glass q-card">
+      <span class="q-tag" id="qTag">Question 1</span>
+      <h2 class="q-title ml" id="qTitle"></h2>
+      <p class="q-hint">Select one mentor</p>
+
+      <div class="search">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+        <input id="inSearch" placeholder="Search mentor…" />
+      </div>
+
+      <div class="grid" id="grid"></div>
+
+      <div class="q-foot">
+        <button class="btn ghost" id="btnBack">&larr; <span>Back</span></button>
+        <span class="picked" id="picked"></span>
+        <span class="sp"></span>
+        <button class="btn" id="btnNext" disabled><span class="lbl">Next</span> <span>&rarr;</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SLIDE 3 : REVIEW ========== -->
+  <section class="screen" id="scReview">
+    <div class="glass q-card">
+      <span class="q-tag">Final step</span>
+      <h2 class="q-title">Review your answers</h2>
+      <p class="q-hint">Tap "Change" if you want to edit any answer.</p>
+      <p class="who" id="whoLine"></p>
+      <div class="review-list" id="reviewList"></div>
+      <div class="q-foot">
+        <button class="btn ghost" id="btnReviewBack">&larr; <span>Back</span></button>
+        <span class="sp"></span>
+        <button class="btn" id="btnSubmit"><span class="spin"></span><span>Submit</span> <span>&check;</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SLIDE 4 : THANK YOU ========== -->
+  <section class="screen" id="scDone">
+    <div class="glass thanks">
+      <div class="check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#141318" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg>
+      </div>
+      <h2>Thank you<span class="grad">!</span></h2>
+      <p id="doneMsg">Your answers were saved successfully. Thanks a lot for your time 💛</p>
+      <button class="btn ghost" id="btnAgain"><span>Submit another response</span></button>
+    </div>
+  </section>
+
+  </div>
+
+  <footer>Made with 💛 · rootme</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   ⚙️  CONFIG — ഇവിടെ മാത്രം മാറ്റം വരുത്തിയാൽ മതി
+============================================================ */
+
+/* 1️⃣  Apps Script deploy ചെയ്തശേഷം കിട്ടുന്ന Web App URL ഇവിടെ ഒട്ടിക്കുക */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwT76wasY01kn3axHWH7b_PRLpm8qDXX6BCDsJ_fQ-qKwuG-zFeEIa6sXZOsOMM-f4/exec";
+
+/* 2️⃣  മെന്റർ ലിസ്റ്റ് — പേര് മാത്രം എഴുതിയാൽ മതി.
+   📸 ഫോട്ടോ:  images/ ഫോൾഡറിൽ  മെന്ററുടെ പേരിൽ  ഇടുക →  images/Rahoof.jpg
+      ഫയലിന്റെ പേര് = ഇവിടെ എഴുതിയ പേര്.  jpg / jpeg / png / webp ഏതും ആകാം.
+      വലിയക്ഷരം-ചെറിയക്ഷരം നോക്കേണ്ട (rahoof.png ആയാലും ശരി),
+      പേരിൽ സ്പേസ് ഉണ്ടെങ്കിൽ ഫയലിൽ സ്പേസ്/-/_ ഏതു വേണമെങ്കിലും ഉപയോഗിക്കാം
+      (ഉദാ: "Abdul Samad" →  Abdul Samad.jpg | abdul-samad.jpg | abdul_samad.jpg)
+   ഫോട്ടോ ഇല്ലെങ്കിൽ പേരിന്റെ ആദ്യാക്ഷരം കൊണ്ടുള്ള avatar താനേ വരും.
+   വേറെ ലിങ്ക് വേണമെങ്കിൽ മാത്രം: { name:"Rahoof", img:"https://..." }
+   ⚠️ blob:https://... ലിങ്കുകൾ വർക്ക് ചെയ്യില്ല (അവ ടെമ്പററി ആണ്) */
+const MENTORS = [
+  "Abdu Rahoof",
+  "Abdul Samad",
+  "Ajmal",
+  "Ansaf Av",
+  "Arjun K",
+  "Ashin Ambrose P",
+  "Aslam",
+  "Aswanth S Vinod",
+  "Irfaq",
+  "Jishnu",
+  "Pranav Joshy",
+  "Rifa K",
+  "Riya",
+  "Sahal K sudheer",
+  "Shahl Mohamed",
+  "Shaneeb",
+  "Shihan",
+  "Shuhaib",
+  "Sonu N",
+  "Yahid K"
+];
+
+/* 3️⃣  ബാച്ച് (സമയം) & സ്പേസ് — ചോദ്യങ്ങൾക്ക് മുൻപ് ചോദിക്കുന്നു */
+const BATCHES = ["9 AM - 12 PM", "12 PM - 3 PM", "3 PM - 6 PM", "6 PM - 9 PM"];
+const SPACES  = ["RTM4", "RTM7"];
+
+/* 4️⃣  ലോഗോ:  images/logo.png  (svg / jpg / webp ഉം ആകാം) ഇട്ടാൽ
+   ഹെഡ്ഡറിൽ അത് താനേ വരും. ഇല്ലെങ്കിൽ CSS-ൽ വരച്ച "me" ലോഗോ കാണിക്കും. */
+const LOGO_CANDIDATES = ["images/logo.svg","images/logo.png","images/logo.jpg",
+                         "images/logo.jpeg","images/logo.webp","images/logo.PNG"];
+
+const IMAGE_DIR  = "images/";                                   // ഫോട്ടോ ഫോൾഡർ
+const IMAGE_EXTS = ["jpg","jpeg","png","webp","JPG","PNG"];     // പരീക്ഷിക്കുന്ന എക്സ്റ്റൻഷനുകൾ
+const DEFAULT_ROLE = "Mentor";                                  // കാർഡിൽ പേരിന് താഴെ വരുന്ന വാക്ക്
+
+/* 5️⃣  ചോദ്യങ്ങൾ (Google Sheet-ൽ ഇതേ ക്രമത്തിൽ കോളം വരും) */
+const QUESTIONS = [
+  { key:"q1", text:"നിങ്ങൾക്ക് ഏറ്റവും എളുപ്പത്തിൽ സമീപിക്കാനാകുന്ന മെന്റർ ആരാണ്?" },
+  { key:"q2", text:"വിഷയങ്ങൾ ഏറ്റവും വ്യക്തമായി മനസ്സിലാകുന്ന രീതിയിൽ വിശദീകരിക്കുന്ന മെന്റർ ആരാണ്?" },
+  { key:"q3", text:"ക്ഷമയോടെ നിങ്ങളുടെ സംശയങ്ങൾ കേട്ട് പരിഹരിക്കുന്ന മെന്റർ ആരാണ്?" },
+  { key:"q4", text:"നിങ്ങളെ തുടർച്ചയായി മുന്നോട്ട് പോകാൻ പ്രോത്സാഹിപ്പിക്കുന്ന മെന്റർ ആരാണ്?" }
+];
+
+/* ============================================================
+   APP
+============================================================ */
+const $  = s => document.querySelector(s);
+const state = { step:0, answers:{}, batch:"", space:"" };
+
+const AVA = [
+  "linear-gradient(135deg,#ffc400,#ff9d00)","linear-gradient(135deg,#ffdd55,#ffb300)",
+  "linear-gradient(135deg,#ffb300,#ff7a00)","linear-gradient(135deg,#ffe37a,#ffc400)",
+  "linear-gradient(135deg,#ffc400,#ffd54a)","linear-gradient(135deg,#ff9d00,#ffcf3d)"
+];
+const gradOf   = n => AVA[[...n].reduce((a,c)=>a+c.charCodeAt(0),0)%AVA.length];
+const initials = n => n.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase();
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* മെന്റർ ലിസ്റ്റ് ഏകീകരിക്കുന്നു: "Rahoof"  →  {name, role, img} */
+const ROSTER = MENTORS.map(m => typeof m === "string"
+  ? { name:m.trim(), role:DEFAULT_ROLE, img:"" }
+  : { name:String(m.name||"").trim(), role:m.role||DEFAULT_ROLE, img:m.img||"" });
+
+/* പേരിൽ നിന്ന് സാധ്യമായ ഫയൽ പാത്തുകൾ ഉണ്ടാക്കുന്നു (images/Rahoof.jpg, images/rahoof.png …) */
+function imageCandidates(m){
+  if(m.img && m.img.trim() && !m.img.startsWith("blob:")) return [m.img.trim()];
+  const n = m.name, lo = n.toLowerCase();
+  const bases = [...new Set([                    // ഏറ്റവും സാധ്യതയുള്ളത് ആദ്യം
+    n, lo, lo.replace(/\s+/g,"-"), lo.replace(/\s+/g,"_"), lo.replace(/\s+/g,"")
+  ])];
+  const out = [];
+  bases.forEach(b => IMAGE_EXTS.forEach(x => out.push(IMAGE_DIR + encodeURIComponent(b) + "." + x)));
+  return out;
+}
+
+/* ഒരു പേരിന് ഒരിക്കൽ മാത്രം ഫോട്ടോ തിരയുന്നു — ഫലം ഓർത്തുവയ്ക്കുന്നു */
+const PHOTO = new Map();          // name → url | null
+function resolvePhoto(m){
+  if(PHOTO.has(m.name)) return Promise.resolve(PHOTO.get(m.name));
+  const cands = imageCandidates(m);
+  return new Promise(done=>{
+    (function tryAt(i){
+      if(i >= cands.length){ PHOTO.set(m.name,null); return done(null); }
+      const im = new Image();
+      im.onload  = ()=>{ PHOTO.set(m.name,cands[i]); done(cands[i]); };
+      im.onerror = ()=> tryAt(i+1);
+      im.src = cands[i];
+    })(0);
+  });
+}
+
+/* ആദ്യം initials avatar കാണിക്കുന്നു; ഫോട്ടോ കിട്ടിയാൽ അതിലേക്ക് fade ചെയ്യുന്നു */
+function avatarHTML(m){
+  return `<div class="ava" data-name="${esc(m.name)}" style="background:${gradOf(m.name)}">${esc(initials(m.name))}</div>`;
+}
+function mountAvatars(root){
+  root.querySelectorAll(".ava[data-name]").forEach(el=>{
+    const m = ROSTER.find(x=>x.name===el.dataset.name);
+    if(!m) return;
+    resolvePhoto(m).then(url=>{
+      if(!url || !el.isConnected) return;
+      const im = new Image();
+      im.src = url; im.alt = m.name; im.className = "fade-in";
+      el.textContent = ""; el.appendChild(im);
+    });
+  });
+}
+
+/* ഗ്രിഡ് അവസാനം എത്തിയോ എന്ന് നോക്കി താഴത്തെ fade ഒഴിവാക്കുന്നു */
+function markScrollEnd(el){
+  const upd = ()=> el.classList.toggle("at-end", el.scrollHeight - el.clientHeight - el.scrollTop < 4);
+  el.onscroll = upd;
+  // സ്ലൈഡ് കാണുന്നതുവരെ ഗ്രിഡിന്റെ ഉയരം 0 ആണ് — വലുപ്പം മാറുമ്പോൾ വീണ്ടും നോക്കുന്നു
+  if(!el._ro && window.ResizeObserver){ el._ro = new ResizeObserver(upd); el._ro.observe(el); }
+  upd();
+}
+
+/* ---------- slide between sections ---------- */
+function show(id, dir){
+  dir = dir || "next";
+  const cur = document.querySelector(".screen.active");
+  const nxt = $(id);
+  if(cur === nxt) return;
+  const outC = dir === "next" ? "out-next" : "out-prev";
+  const inC  = dir === "next" ? "in-next"  : "in-prev";
+
+  if(cur){
+    cur.classList.add(outC);
+    setTimeout(()=>{
+      cur.classList.remove("active",outC);
+      nxt.classList.remove("in-next","in-prev");
+      nxt.classList.add("active",inC);
+      window.scrollTo({top:0,behavior:"smooth"});
+    },300);
+  }else{
+    nxt.classList.add("active",inC);
+  }
+}
+
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove("show"),3200);
+}
+
+function updateProgress(){
+  $("#bar").style.width = (state.step / QUESTIONS.length) * 100 + "%";
+  $("#stepNum").textContent = Math.min(state.step+1,QUESTIONS.length) + " / " + QUESTIONS.length;
+}
+
+/* ---------- question ---------- */
+function renderQuestion(filter=""){
+  const q = QUESTIONS[state.step];
+  $("#qTag").textContent = "Question " + (state.step+1);
+  $("#qTitle").textContent = q.text;
+  updateProgress();
+
+  const f = filter.trim().toLowerCase();
+  const list = ROSTER.filter(m => !f || m.name.toLowerCase().includes(f) || (m.role||"").toLowerCase().includes(f));
+  const grid = $("#grid");
+
+  grid.innerHTML = list.length ? list.map((m,i)=>`
+    <div class="mentor ${state.answers[q.key]===m.name?"sel":""}" data-name="${esc(m.name)}" style="animation-delay:${i*38}ms">
+      <div class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="#141318" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg></div>
+      ${avatarHTML(m)}
+      <div class="nm">${esc(m.name)}</div>
+      <div class="rl">${esc(m.role||"")}</div>
+    </div>`).join("")
+    : `<div class="empty">No mentor found for "${esc(filter)}"</div>`;
+
+  grid.querySelectorAll(".mentor").forEach(el=>{
+    el.addEventListener("click",()=>{
+      grid.querySelectorAll(".mentor").forEach(x=>x.classList.remove("sel"));
+      el.classList.add("sel");
+      state.answers[q.key] = el.dataset.name;
+      refreshFoot();
+      if(navigator.vibrate) navigator.vibrate(12);
+      setTimeout(next,430);                      // auto-slide to next question
+    });
+  });
+
+  mountAvatars(grid);
+  markScrollEnd(grid);
+  refreshFoot();
+  $("#btnBack").style.visibility = state.step === 0 ? "hidden" : "visible";
+}
+
+function refreshFoot(){
+  const a = state.answers[QUESTIONS[state.step].key];
+  $("#btnNext").disabled = !a;
+  $("#picked").innerHTML = a ? `Selected: <b>${esc(a)}</b>` : "";
+  $("#btnNext").querySelector(".lbl").textContent =
+    state.step === QUESTIONS.length-1 ? "Finish" : "Next";
+}
+
+function next(){
+  if(!state.answers[QUESTIONS[state.step].key]){ toast("Please select a mentor"); return; }
+  if(state.step < QUESTIONS.length-1){
+    state.step++; $("#inSearch").value = ""; renderQuestion(); show("#scQ","next");
+  }else{
+    state.step = QUESTIONS.length; updateProgress(); renderReview(); show("#scReview","next");
+  }
+}
+function back(){
+  if(state.step > 0){ state.step--; $("#inSearch").value=""; renderQuestion(); show("#scQ","prev"); }
+}
+
+/* ---------- review ---------- */
+function renderReview(){
+  $("#reviewList").innerHTML = QUESTIONS.map((q,i)=>{
+    const nm = state.answers[q.key] || "—";
+    const m  = ROSTER.find(x=>x.name===nm) || {name:nm,role:"",img:""};
+    return `<div class="rv" style="animation-delay:${i*45}ms">
+      ${avatarHTML(m)}
+      <div class="txt"><p class="ml">${esc(q.text)}</p><b>${esc(nm)}</b></div>
+      <button data-i="${i}">Change</button>
+    </div>`;
+  }).join("");
+  $("#whoLine").innerHTML = `Batch <b>${esc(state.batch)}</b> &middot; Space <b>${esc(state.space)}</b>`;
+  mountAvatars($("#reviewList"));
+  $("#reviewList").querySelectorAll("button").forEach(b=>{
+    b.addEventListener("click",()=>{ state.step = +b.dataset.i; renderQuestion(); show("#scQ","prev"); });
+  });
+}
+
+/* ---------- submit ---------- */
+async function submit(){
+  const btn = $("#btnSubmit");
+  if(btn.classList.contains("loading")) return;
+
+  if(QUESTIONS.some(q=>!state.answers[q.key])){ toast("Please answer every question"); return; }
+  if(!SCRIPT_URL || SCRIPT_URL.includes("PASTE_YOUR")){
+    toast("Apps Script URL is not set (SCRIPT_URL in index.html)"); return;
+  }
+
+  btn.classList.add("loading"); btn.disabled = true;
+
+  const payload = {
+    batch: state.batch,
+    space: state.space,
+    answers: state.answers,
+    questions: QUESTIONS.map(q=>({key:q.key,text:q.text})),
+    submittedAt: new Date().toISOString(),
+    userAgent: navigator.userAgent
+  };
+
+  try{
+    // text/plain → CORS preflight ഒഴിവാക്കാൻ (Apps Script-ന് ഇത് വേണം)
+    const res  = await fetch(SCRIPT_URL,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify(payload),
+      redirect:"follow"
+    });
+    // Apps Script POST-നെ redirect ചെയ്യും; ചിലപ്പോൾ അവസാന മറുപടി JSON ആകില്ല.
+    // വരി അപ്പോഴേക്കും സേവ് ആയിട്ടുണ്ടാകും — അതുകൊണ്ട് സ്പഷ്ടമായ ok:false മാത്രം പിശകായി കണക്കാക്കുന്നു.
+    let data = null;
+    try { data = await res.json(); } catch(e){ /* HTML/ഒഴിഞ്ഞ മറുപടി — കുഴപ്പമില്ല */ }
+    if(data && data.ok === false) throw new Error(data.error || "Server error");
+
+    show("#scDone","next"); confetti(); $("#progWrap").classList.remove("show");
+  }catch(err){
+    console.error(err);
+    toast("Could not save. Check your internet and try again.");
+  }finally{
+    btn.classList.remove("loading"); btn.disabled = false;
+  }
+}
+
+/* ---------- confetti ---------- */
+function confetti(){
+  const cv = $("#confetti"), ctx = cv.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = innerWidth*dpr; cv.height = innerHeight*dpr;
+  cv.style.width = innerWidth+"px"; cv.style.height = innerHeight+"px";
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const cols = ["#ffc400","#ffdd55","#ff9d00","#ffe37a","#ffffff"];
+  const P = Array.from({length:150},()=>({
+    x:Math.random()*innerWidth, y:-40-Math.random()*innerHeight*.6,
+    w:6+Math.random()*8, h:8+Math.random()*10,
+    vy:2.2+Math.random()*3.6, vx:-1.6+Math.random()*3.2,
+    rot:Math.random()*Math.PI, vr:-.16+Math.random()*.32,
+    c:cols[(Math.random()*cols.length)|0]
+  }));
+  let t = 0;
+  (function loop(){
+    t++; ctx.clearRect(0,0,innerWidth,innerHeight);
+    P.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr; p.vy+=.012;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.globalAlpha = Math.max(0,1-t/330);
+      ctx.fillStyle = p.c; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+    });
+    if(t < 340) requestAnimationFrame(loop); else ctx.clearRect(0,0,innerWidth,innerHeight);
+  })();
+}
+
+/* ---------- events ---------- */
+/* ---------- batch / space chips ---------- */
+function renderChips(el, items, key){
+  el.innerHTML = items.map(v=>`<button type="button" class="chip" data-v="${esc(v)}">${esc(v)}</button>`).join("");
+  el.querySelectorAll(".chip").forEach(c=>{
+    c.addEventListener("click",()=>{
+      el.querySelectorAll(".chip").forEach(x=>x.classList.remove("sel"));
+      c.classList.add("sel");
+      state[key] = c.dataset.v;
+      if(navigator.vibrate) navigator.vibrate(8);
+    });
+  });
+}
+renderChips($("#batchChips"), BATCHES, "batch");
+renderChips($("#spaceChips"), SPACES,  "space");
+
+$("#btnStart").addEventListener("click",()=>{
+  if(!state.batch){ toast("Please select your batch"); $("#batchChips").scrollIntoView({block:"center",behavior:"smooth"}); return; }
+  if(!state.space){ toast("Please select your space"); $("#spaceChips").scrollIntoView({block:"center",behavior:"smooth"}); return; }
+  state.step = 0; renderQuestion(); show("#scQ","next"); $("#progWrap").classList.add("show");
+});
+$("#btnNext").addEventListener("click",next);
+$("#btnBack").addEventListener("click",back);
+$("#btnReviewBack").addEventListener("click",()=>{ state.step = QUESTIONS.length-1; renderQuestion(); show("#scQ","prev"); });
+$("#btnSubmit").addEventListener("click",submit);
+$("#btnAgain").addEventListener("click",()=>location.reload());
+$("#inSearch").addEventListener("input",e=>renderQuestion(e.target.value));
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="Enter" && $("#scQ").classList.contains("active") && !$("#btnNext").disabled) next();
+  if(e.key==="Enter" && $("#scIntro").classList.contains("active")) $("#btnStart").click();
+});
+
+/* init */
+/* ലോഗോ ഫയൽ ഉണ്ടെങ്കിൽ ഹെഡ്ഡറിൽ വയ്ക്കുന്നു */
+(function loadLogo(i){
+  i = i || 0;
+  if(i >= LOGO_CANDIDATES.length) return;                    // ഒന്നും ഇല്ല → വരച്ച ലോഗോ നിൽക്കട്ടെ
+  const im = new Image();
+  im.onload = ()=>{ const el = $("#logoImg");
+    el.src = LOGO_CANDIDATES[i]; el.hidden = false; $("#logoFallback").remove(); };
+  im.onerror = ()=> loadLogo(i+1);
+  im.src = LOGO_CANDIDATES[i];
+})();
+
+ROSTER.forEach(resolvePhoto);                 // ഫോട്ടോകൾ നേരത്തെ കണ്ടെത്തി വയ്ക്കുന്നു
+$("#mCount").textContent = ROSTER.length;
+$("#qCount").textContent = QUESTIONS.length;
+$("#stepNum").textContent = "1 / " + QUESTIONS.length;
+</script>
+</body>
+</html>

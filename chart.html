@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mentor Recognition Dashboard</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+  --bg:#eef2f8;
+  --bg-2:#e6ebf5;
+  --surface:#ffffff;
+  --ink:#111827;
+  --muted:#6b7280;
+  --faint:#9aa4b2;
+  --border:#e7ecf5;
+  --border-strong:#dbe2ef;
+
+  --indigo:#5b5bf0;
+  --violet:#8b5cf6;
+  --teal:#12b3a6;
+  --amber:#f59e0b;
+
+  --gold:#f4b731;
+  --silver:#b7c0cc;
+  --bronze:#cf8a4b;
+
+  --shadow-sm:0 1px 2px rgba(17,24,39,.04), 0 1px 3px rgba(17,24,39,.05);
+  --shadow-md:0 8px 24px -8px rgba(41,49,110,.18), 0 2px 8px -4px rgba(17,24,39,.08);
+  --shadow-lg:0 24px 48px -16px rgba(41,49,110,.28);
+
+  --r:18px;
+  --r-sm:12px;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+html{-webkit-text-size-adjust:100%}
+
+body{
+  font-family:"Inter",system-ui,-apple-system,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(1100px 520px at 100% -8%, rgba(139,92,246,.10), transparent 60%),
+    radial-gradient(900px 480px at -8% 6%, rgba(91,91,240,.10), transparent 58%),
+    linear-gradient(180deg, var(--bg), var(--bg-2));
+  background-attachment:fixed;
+  min-height:100vh;
+  padding:28px clamp(16px,4vw,44px) 64px;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- Top loading bar ---------- */
+#loadbar{
+  position:fixed;top:0;left:0;height:3px;width:0;z-index:50;
+  background:linear-gradient(90deg,var(--indigo),var(--violet));
+  box-shadow:0 0 12px rgba(139,92,246,.6);
+  transition:width .4s var(--ease), opacity .4s ease;
+}
+
+.wrap{max-width:1240px;margin:0 auto}
+
+/* ---------- Header ---------- */
+header{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  gap:20px;flex-wrap:wrap;margin-bottom:26px;
+}
+.brand{display:flex;flex-direction:column;gap:8px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--indigo);
+}
+.eyebrow .dot{
+  width:7px;height:7px;border-radius:50%;background:var(--teal);
+  box-shadow:0 0 0 0 rgba(18,179,166,.5);animation:pulse 2s infinite;
+}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(18,179,166,.45)}
+  70%{box-shadow:0 0 0 8px rgba(18,179,166,0)}
+  100%{box-shadow:0 0 0 0 rgba(18,179,166,0)}
+}
+h1{
+  font-family:"Space Grotesk",sans-serif;font-weight:700;
+  font-size:clamp(28px,4.4vw,42px);line-height:1.02;letter-spacing:-.02em;
+}
+.sub{color:var(--muted);font-size:15px;max-width:46ch}
+
+.head-actions{display:flex;align-items:center;gap:12px}
+.updated{font-size:13px;color:var(--faint);white-space:nowrap}
+.refresh{
+  display:inline-flex;align-items:center;gap:9px;
+  background:var(--surface);color:var(--ink);
+  border:1px solid var(--border-strong);border-radius:12px;
+  padding:11px 16px;font:600 14px "Inter",sans-serif;cursor:pointer;
+  box-shadow:var(--shadow-sm);transition:transform .2s var(--ease), box-shadow .2s, border-color .2s;
+}
+.refresh:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--indigo)}
+.refresh:active{transform:translateY(0)}
+.refresh svg{width:16px;height:16px}
+.refresh.spin svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- Reveal animation ---------- */
+.reveal{opacity:0;transform:translateY(16px)}
+body.ready .reveal{animation:rise .7s var(--ease) forwards}
+body.ready .reveal[data-d="1"]{animation-delay:.05s}
+body.ready .reveal[data-d="2"]{animation-delay:.12s}
+body.ready .reveal[data-d="3"]{animation-delay:.19s}
+body.ready .reveal[data-d="4"]{animation-delay:.26s}
+body.ready .reveal[data-d="5"]{animation-delay:.34s}
+body.ready .reveal[data-d="6"]{animation-delay:.42s}
+body.ready .reveal[data-d="7"]{animation-delay:.50s}
+@keyframes rise{to{opacity:1;transform:translateY(0)}}
+
+/* ---------- KPI cards ---------- */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+.kpi{
+  position:relative;overflow:hidden;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:20px 20px 18px;
+  box-shadow:var(--shadow-sm);
+  transition:transform .25s var(--ease), box-shadow .25s;
+}
+.kpi:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.kpi::after{
+  content:"";position:absolute;left:0;top:0;height:100%;width:4px;
+  background:linear-gradient(180deg,var(--indigo),var(--violet));
+}
+.kpi.teal::after{background:linear-gradient(180deg,var(--teal),#38d6c8)}
+.kpi.amber::after{background:linear-gradient(180deg,var(--amber),#fbbf24)}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.kpi-label{font-size:12.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.kpi-ico{
+  width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-size:18px;
+  background:rgba(91,91,240,.10);color:var(--indigo);
+}
+.kpi.teal .kpi-ico{background:rgba(18,179,166,.12);color:var(--teal)}
+.kpi.amber .kpi-ico{background:rgba(245,158,11,.13);color:#d97706}
+.kpi-num{
+  font-family:"Space Grotesk",sans-serif;font-weight:700;
+  font-size:clamp(30px,4vw,40px);line-height:1;letter-spacing:-.02em;
+}
+.kpi-num.name{font-size:clamp(19px,2.4vw,24px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi-foot{margin-top:8px;font-size:12.5px;color:var(--faint)}
+
+/* ---------- Panels & grid ---------- */
+.grid{display:grid;gap:16px}
+.g-2-1{grid-template-columns:1.7fr 1fr;margin-bottom:16px}
+.g-1-2{grid-template-columns:1fr 1.55fr;margin-bottom:16px}
+
+.panel{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:22px;box-shadow:var(--shadow-sm);
+}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.panel-title{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:17px;letter-spacing:-.01em}
+.panel-note{font-size:12.5px;color:var(--faint)}
+
+.chart-box{position:relative;height:340px}
+.chart-box.donut{height:300px}
+.donut-center{
+  position:absolute;inset:0;display:grid;place-content:center;text-align:center;pointer-events:none;
+}
+.donut-center b{font-family:"Space Grotesk",sans-serif;font-size:34px;font-weight:700;display:block;line-height:1}
+.donut-center span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+
+.legend{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.leg-row{display:flex;align-items:center;justify-content:space-between;font-size:14px}
+.leg-l{display:flex;align-items:center;gap:9px;font-weight:500}
+.leg-sw{width:11px;height:11px;border-radius:4px}
+.leg-v{font-family:"Space Grotesk",sans-serif;font-weight:600;color:var(--muted)}
+
+/* ---------- Leaderboard ---------- */
+.board{display:flex;flex-direction:column;gap:12px}
+.lb{
+  display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:14px;
+  padding:11px 12px;border-radius:14px;border:1px solid transparent;
+  transition:background .2s, border-color .2s;
+}
+.lb:hover{background:#f7f9fd;border-color:var(--border)}
+.rank{
+  width:34px;height:34px;border-radius:11px;display:grid;place-items:center;
+  font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:14px;
+  background:#eef1f7;color:var(--muted);
+}
+.lb.top1 .rank{background:linear-gradient(145deg,#ffe08a,var(--gold));color:#7a5200;box-shadow:0 4px 12px -4px rgba(244,183,49,.6)}
+.lb.top2 .rank{background:linear-gradient(145deg,#e6ebf1,var(--silver));color:#4a5563}
+.lb.top3 .rank{background:linear-gradient(145deg,#e8bd92,var(--bronze));color:#5f3a15}
+.lb-main{min-width:0}
+.lb-name{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:7px}
+.bar-track{height:8px;border-radius:99px;background:#eef1f7;overflow:hidden}
+.bar-fill{
+  height:100%;width:0;border-radius:99px;
+  background:linear-gradient(90deg,var(--indigo),var(--violet));
+  transition:width 1.1s var(--ease);
+}
+.lb.top1 .bar-fill{background:linear-gradient(90deg,var(--amber),var(--gold))}
+.lb-val{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:16px;text-align:right}
+.lb-val small{display:block;font:500 11px "Inter";color:var(--faint);letter-spacing:.04em}
+
+/* ---------- Table ---------- */
+.table-scroll{overflow-x:auto;border-radius:var(--r-sm);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
+thead th{
+  position:sticky;top:0;background:#f6f8fc;color:var(--muted);
+  font-weight:600;text-align:left;padding:12px 14px;font-size:12px;
+  text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);
+}
+tbody td{padding:12px 14px;border-bottom:1px solid var(--border);color:#374151}
+tbody tr:last-child td{border-bottom:none}
+tbody tr{opacity:0}
+body.ready tbody tr{animation:rowIn .5s var(--ease) forwards}
+@keyframes rowIn{to{opacity:1}}
+tbody tr:hover{background:#f7f9fd}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;
+  font-size:12px;font-weight:600;
+}
+.pill.rtm4{background:rgba(91,91,240,.10);color:var(--indigo)}
+.pill.rtm7{background:rgba(18,179,166,.12);color:#0f9d92}
+.pill.other{background:#eef1f7;color:var(--muted)}
+
+/* ---------- Question leaders ---------- */
+.q-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.q-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:18px;box-shadow:var(--shadow-sm);
+  transition:transform .25s var(--ease), box-shadow .25s;
+}
+.q-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.q-ico{
+  width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;
+  background:linear-gradient(145deg,rgba(91,91,240,.10),rgba(139,92,246,.12));margin-bottom:13px;
+}
+.q-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px}
+.q-winner{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.q-votes{margin-top:5px;font-size:12.5px;color:var(--faint)}
+
+/* ---------- Skeleton shimmer ---------- */
+.skel{color:transparent !important;position:relative;border-radius:8px;overflow:hidden;background:#eef1f7}
+.skel::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);
+  transform:translateX(-100%);animation:shimmer 1.3s infinite;
+}
+@keyframes shimmer{100%{transform:translateX(100%)}}
+
+.empty{padding:26px;text-align:center;color:var(--faint);font-size:14px}
+
+/* ---------- Responsive ---------- */
+@media(max-width:980px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .g-2-1,.g-1-2{grid-template-columns:1fr}
+  .q-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:560px){
+  .kpis{grid-template-columns:1fr 1fr}
+  .q-grid{grid-template-columns:1fr}
+  header{align-items:flex-start}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::after,*::before{animation:none !important;transition:none !important}
+  .reveal{opacity:1;transform:none}
+  tbody tr{opacity:1}
+  .bar-fill{transition:none}
+}
+</style>
+</head>
+<body>
+
+<div id="loadbar"></div>
+
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <span class="eyebrow"><span class="dot"></span>RootMe · Live from responses sheet</span>
+      <h1>Mentor Recognition</h1>
+      <p class="sub">Who students turn to — ranked across approachability, clarity, patience and motivation.</p>
+    </div>
+    <div class="head-actions">
+      <span class="updated" id="updated">Loading…</span>
+      <button class="refresh" id="refresh" title="Reload latest responses">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <!-- KPIs -->
+  <section class="kpis">
+    <div class="kpi reveal" data-d="1">
+      <div class="kpi-top"><span class="kpi-label">Total Responses</span><span class="kpi-ico">🗳️</span></div>
+      <div class="kpi-num" id="total">0</div>
+      <div class="kpi-foot" id="total-foot">across both spaces</div>
+    </div>
+    <div class="kpi teal reveal" data-d="2">
+      <div class="kpi-top"><span class="kpi-label">RTM4</span><span class="kpi-ico">🏫</span></div>
+      <div class="kpi-num" id="rtm4">0</div>
+      <div class="kpi-foot" id="rtm4-foot">responses</div>
+    </div>
+    <div class="kpi teal reveal" data-d="3">
+      <div class="kpi-top"><span class="kpi-label">RTM7</span><span class="kpi-ico">🏫</span></div>
+      <div class="kpi-num" id="rtm7">0</div>
+      <div class="kpi-foot" id="rtm7-foot">responses</div>
+    </div>
+    <div class="kpi amber reveal" data-d="4">
+      <div class="kpi-top"><span class="kpi-label">Top Mentor</span><span class="kpi-ico">🏆</span></div>
+      <div class="kpi-num name" id="top">—</div>
+      <div class="kpi-foot" id="top-foot">most votes overall</div>
+    </div>
+  </section>
+
+  <!-- Charts -->
+  <section class="grid g-2-1">
+    <div class="panel reveal" data-d="5">
+      <div class="panel-head">
+        <span class="panel-title">Top Mentors</span>
+        <span class="panel-note">total votes across all four questions</span>
+      </div>
+      <div class="chart-box"><canvas id="barChart"></canvas></div>
+    </div>
+    <div class="panel reveal" data-d="6">
+      <div class="panel-head">
+        <span class="panel-title">Space Split</span>
+      </div>
+      <div class="chart-box donut">
+        <canvas id="donutChart"></canvas>
+        <div class="donut-center"><b id="donutTotal">0</b><span>responses</span></div>
+      </div>
+      <div class="legend" id="donutLegend"></div>
+    </div>
+  </section>
+
+  <!-- Leaderboard + Recent -->
+  <section class="grid g-1-2">
+    <div class="panel reveal" data-d="5">
+      <div class="panel-head">
+        <span class="panel-title">Leaderboard</span>
+        <span class="panel-note">top 8</span>
+      </div>
+      <div class="board" id="board"></div>
+    </div>
+    <div class="panel reveal" data-d="6">
+      <div class="panel-head">
+        <span class="panel-title">Recent Responses</span>
+        <span class="panel-note">latest 20</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th>Space</th><th>Approachable</th><th>Clear</th><th>Patient</th><th>Motivating</th>
+          </tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Question leaders -->
+  <section class="q-grid" id="qGrid"></section>
+
+</div>
+
+<script>
+const SHEET_URL =
+"https://docs.google.com/spreadsheets/d/1u7Tk3IDzA8PSiphlrAz6bl_KtqdrT_fcAtEBXXBrVjM/export?format=csv&gid=1133826034";
+
+/* Exact sheet column keys + friendly labels/icons */
+const QCOLS = [
+  {key:"Q1 - എളുപ്പത്തിൽ സമീപിക്കാനാകുന്ന മെന്റർ",  short:"Approachable", icon:"🤝"},
+  {key:"Q2 - വ്യക്തമായി വിശദീകരിക്കുന്ന മെന്റർ",     short:"Clear Explainer", icon:"💡"},
+  {key:"Q3 - ക്ഷമയോടെ സംശയം പരിഹരിക്കുന്ന മെന്റർ",   short:"Patient Support", icon:"🧩"},
+  {key:"Q4 - മുന്നോട്ട് പോകാൻ പ്രോത്സാഹിപ്പിക്കുന്ന മെന്റർ", short:"Motivator", icon:"🚀"},
+];
+
+const C = {indigo:"#5b5bf0", violet:"#8b5cf6", teal:"#12b3a6", amber:"#f59e0b"};
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+if(window.Chart){
+  Chart.defaults.font.family = "'Inter', sans-serif";
+  Chart.defaults.color = "#6b7280";
+}
+
+let barChart, donutChart;
+
+/* ---- helpers ---- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function countUp(el, target, dur=1100){
+  if(reduceMotion){ el.textContent = target.toLocaleString(); return; }
+  const start = performance.now();
+  (function frame(now){
+    const p = Math.min((now-start)/dur, 1);
+    const eased = 1 - Math.pow(1-p, 3);
+    el.textContent = Math.round(target*eased).toLocaleString();
+    if(p<1) requestAnimationFrame(frame);
+  })(start);
+}
+
+function gradient(ctx, area, from, to){
+  if(!area) return from;
+  const g = ctx.createLinearGradient(area.left, 0, area.right, 0);
+  g.addColorStop(0, from); g.addColorStop(1, to);
+  return g;
+}
+
+/* ---- loading indicator ---- */
+function setLoading(on){
+  const bar = $("loadbar"), btn = $("refresh");
+  if(on){ bar.style.opacity=1; bar.style.width="72%"; btn.classList.add("spin"); }
+  else{ bar.style.width="100%"; btn.classList.remove("spin");
+        setTimeout(()=>{ bar.style.opacity=0; bar.style.width="0"; }, 450); }
+}
+
+/* ---- main render ---- */
+function render(rows){
+  const data = rows.filter(r => r.Batch);
+
+  /* KPIs */
+  let rtm4=0, rtm7=0;
+  const mentors = {};
+  const perQ = QCOLS.map(()=> ({}));
+
+  data.forEach(r=>{
+    if(r.Batch==="RTM4") rtm4++;
+    if(r.Batch==="RTM7") rtm7++;
+    QCOLS.forEach((q,i)=>{
+      const m = (r[q.key]||"").trim();
+      if(!m) return;
+      mentors[m] = (mentors[m]||0)+1;
+      perQ[i][m] = (perQ[i][m]||0)+1;
+    });
+  });
+
+  countUp($("total"), data.length);
+  countUp($("rtm4"), rtm4);
+  countUp($("rtm7"), rtm7);
+  const total = data.length || 1;
+  $("rtm4-foot").textContent = Math.round(rtm4/total*100)+"% of responses";
+  $("rtm7-foot").textContent = Math.round(rtm7/total*100)+"% of responses";
+
+  const ranked = Object.entries(mentors).sort((a,b)=>b[1]-a[1]);
+  const topName = ranked.length ? ranked[0][0] : "—";
+  $("top").textContent = topName;
+  $("top").title = topName;
+  $("top-foot").textContent = ranked.length ? ranked[0][1]+" votes overall" : "no votes yet";
+
+  /* Bar chart — top 12 */
+  const top = ranked.slice(0,12);
+  if(barChart) barChart.destroy();
+  if(top.length){
+    barChart = new Chart($("barChart"), {
+      type:"bar",
+      data:{
+        labels: top.map(t=>t[0]),
+        datasets:[{
+          label:"Votes",
+          data: top.map(t=>t[1]),
+          backgroundColor: ctx => gradient(ctx.chart.ctx, ctx.chart.chartArea, C.indigo, C.violet),
+          borderRadius:8, borderSkipped:false, barThickness:"flex", maxBarThickness:26,
+        }]
+      },
+      options:{
+        indexAxis:"y", responsive:true, maintainAspectRatio:false,
+        animation: reduceMotion ? false : {
+          duration:900, easing:"easeOutQuart",
+          delay: ctx => (ctx.type==="data" && ctx.mode==="default") ? ctx.dataIndex*70 : 0
+        },
+        plugins:{ legend:{display:false},
+          tooltip:{ backgroundColor:"#111827", padding:11, cornerRadius:10, displayColors:false,
+            titleFont:{weight:"600"}, callbacks:{ label:c=>` ${c.parsed.x} votes` } } },
+        scales:{
+          x:{ beginAtZero:true, ticks:{precision:0}, grid:{color:"#eef1f7", drawBorder:false} },
+          y:{ grid:{display:false, drawBorder:false}, ticks:{font:{size:13, weight:"500"}, color:"#374151"} }
+        }
+      }
+    });
+  }
+
+  /* Donut — RTM4 vs RTM7 (+ other) */
+  const other = data.length - rtm4 - rtm7;
+  const dLabels=["RTM4","RTM7"], dData=[rtm4,rtm7], dColors=[C.indigo, C.teal];
+  if(other>0){ dLabels.push("Other"); dData.push(other); dColors.push("#c7cedb"); }
+  $("donutTotal").textContent = data.length;
+  if(donutChart) donutChart.destroy();
+  donutChart = new Chart($("donutChart"), {
+    type:"doughnut",
+    data:{ labels:dLabels, datasets:[{ data:dData, backgroundColor:dColors, borderWidth:0, hoverOffset:6 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:"72%",
+      animation: reduceMotion ? false : {animateRotate:true, duration:1000, easing:"easeOutQuart"},
+      plugins:{ legend:{display:false},
+        tooltip:{ backgroundColor:"#111827", padding:11, cornerRadius:10,
+          callbacks:{ label:c=>` ${c.label}: ${c.parsed} (${Math.round(c.parsed/total*100)}%)` } } }
+    }
+  });
+  $("donutLegend").innerHTML = dLabels.map((l,i)=>`
+    <div class="leg-row">
+      <span class="leg-l"><span class="leg-sw" style="background:${dColors[i]}"></span>${esc(l)}</span>
+      <span class="leg-v">${dData[i]} · ${Math.round(dData[i]/total*100)}%</span>
+    </div>`).join("");
+
+  /* Leaderboard — top 8 */
+  const maxV = ranked.length ? ranked[0][1] : 1;
+  $("board").innerHTML = ranked.length ? ranked.slice(0,8).map(([name,v],i)=>`
+    <div class="lb ${i<3?'top'+(i+1):''}">
+      <span class="rank">${i+1}</span>
+      <div class="lb-main">
+        <div class="lb-name">${esc(name)}</div>
+        <div class="bar-track"><div class="bar-fill" data-w="${Math.round(v/maxV*100)}"></div></div>
+      </div>
+      <div class="lb-val">${v}<small>VOTES</small></div>
+    </div>`).join("") : `<div class="empty">No votes yet.</div>`;
+  // animate fills next frame
+  requestAnimationFrame(()=> requestAnimationFrame(()=>{
+    document.querySelectorAll(".bar-fill").forEach(el=> el.style.width = el.dataset.w + "%");
+  }));
+
+  /* Recent table — latest 20 */
+  const recent = data.slice(-20).reverse();
+  const spaceClass = b => b==="RTM4"?"rtm4":b==="RTM7"?"rtm7":"other";
+  $("tableBody").innerHTML = recent.length ? recent.map((r,i)=>`
+    <tr style="animation-delay:${reduceMotion?0:i*0.03}s">
+      <td><span class="pill ${spaceClass(r.Batch)}">${esc(r.Batch)}</span></td>
+      <td>${esc(r[QCOLS[0].key]||"—")}</td>
+      <td>${esc(r[QCOLS[1].key]||"—")}</td>
+      <td>${esc(r[QCOLS[2].key]||"—")}</td>
+      <td>${esc(r[QCOLS[3].key]||"—")}</td>
+    </tr>`).join("") : `<tr><td colspan="5" class="empty">No responses yet.</td></tr>`;
+
+  /* Question leaders */
+  $("qGrid").innerHTML = QCOLS.map((q,i)=>{
+    const entries = Object.entries(perQ[i]).sort((a,b)=>b[1]-a[1]);
+    const win = entries.length ? entries[0] : null;
+    return `
+    <div class="q-card reveal" data-d="${4+i%4}">
+      <div class="q-ico">${q.icon}</div>
+      <div class="q-label">${esc(q.short)}</div>
+      <div class="q-winner" title="${win?esc(win[0]):''}">${win?esc(win[0]):"—"}</div>
+      <div class="q-votes">${win?win[1]+" votes":"no votes yet"}</div>
+    </div>`;
+  }).join("");
+
+  $("updated").textContent = "Updated " + new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+  document.body.classList.add("ready");
+}
+
+/* ---- load / refresh ---- */
+function load(){
+  setLoading(true);
+  Papa.parse(SHEET_URL, {
+    download:true, header:true,
+    complete: res => { render(res.data || []); setLoading(false); },
+    error: () => {
+      setLoading(false);
+      $("updated").textContent = "Couldn't load sheet — check your connection";
+      $("board").innerHTML = `<div class="empty">Couldn't reach the responses sheet.</div>`;
+      document.body.classList.add("ready");
+    }
+  });
+}
+
+$("refresh").addEventListener("click", load);
+load();
+</script>
+
+</body>
+</html>

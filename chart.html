@@ -11,6 +11,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
 <style>
 :root{
@@ -131,6 +133,21 @@ body.ready .reveal[data-d="7"]{animation-delay:.46s}
 .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
 .panel-title{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:17px;letter-spacing:-.01em}
 .panel-note{font-size:12.5px;color:var(--faint);text-align:right}
+.head-right{display:flex;align-items:center;gap:12px}
+
+/* Download control */
+.dl{position:relative}
+.dl-btn{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border-strong);border-radius:10px;padding:8px 13px;font:600 13px "Inter",sans-serif;color:var(--ink);cursor:pointer;box-shadow:var(--shadow-sm);transition:border-color .18s,color .18s,transform .18s var(--ease)}
+.dl-btn:hover{border-color:var(--indigo);color:var(--indigo);transform:translateY(-1px)}
+.dl-btn svg{width:15px;height:15px}
+.dl-btn.busy{opacity:.55;pointer-events:none}
+.dl-btn.busy svg{animation:spin .8s linear infinite}
+.dl-menu{position:absolute;right:0;top:calc(100% + 8px);background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);padding:6px;display:none;flex-direction:column;gap:2px;z-index:30;min-width:184px}
+.dl-menu.open{display:flex;animation:pop .16s var(--ease)}
+@keyframes pop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.dl-menu button{display:flex;align-items:center;gap:10px;border:none;background:transparent;text-align:left;padding:9px 11px;border-radius:8px;font:500 13.5px "Inter",sans-serif;color:var(--ink);cursor:pointer;transition:background .15s,color .15s}
+.dl-menu button:hover{background:#f3f5fa;color:var(--indigo)}
+.dl-menu button .mi{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:14px;background:#eef1f7}
 .chart-box{position:relative;height:360px}
 .chart-box.donut{height:300px}
 .donut-center{position:absolute;inset:0;display:grid;place-content:center;text-align:center;pointer-events:none}
@@ -303,10 +320,22 @@ tbody tr:hover{background:#f7f9fd}
 
   <!-- Leaderboard + Recent -->
   <section class="grid g-1-2">
-    <div class="panel reveal" data-d="6">
+    <div class="panel reveal" data-d="6" id="lbPanel">
       <div class="panel-head">
         <span class="panel-title">Leaderboard</span>
-        <span class="panel-note" id="boardNote">all mentors</span>
+        <div class="head-right">
+          <span class="panel-note" id="boardNote">all mentors</span>
+          <div class="dl" data-html2canvas-ignore="true">
+            <button class="dl-btn" id="dlBtn" title="Download leaderboard">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download
+            </button>
+            <div class="dl-menu" id="dlMenu">
+              <button data-fmt="png"><span class="mi">🖼️</span>Image (PNG)</button>
+              <button data-fmt="pdf"><span class="mi">📄</span>PDF document</button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="board" id="board"></div>
     </div>
@@ -581,6 +610,52 @@ $("resetBtn").addEventListener("click", ()=>{
   $("selBatch").value="all";
   render();
 });
+
+/* ---- download leaderboard (PNG / PDF) ---- */
+$("dlBtn").addEventListener("click", e=>{ e.stopPropagation(); $("dlMenu").classList.toggle("open"); });
+document.addEventListener("click", e=>{ if(!e.target.closest(".dl")) $("dlMenu").classList.remove("open"); });
+$("dlMenu").addEventListener("click", e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  exportLeaderboard(b.dataset.fmt);
+});
+
+async function exportLeaderboard(fmt){
+  const node=$("lbPanel"), btn=$("dlBtn");
+  $("dlMenu").classList.remove("open");
+  btn.classList.add("busy");
+  try{
+    /* make sure all mentor photos have finished loading */
+    await Promise.all([...node.querySelectorAll("img")].map(img=>
+      img.complete ? Promise.resolve() : new Promise(r=>{ img.onload=img.onerror=r; })));
+
+    const canvas=await html2canvas(node,{scale:2, backgroundColor:"#ffffff", useCORS:true, logging:false});
+    const stamp=new Date().toISOString().slice(0,10);
+
+    if(fmt==="png"){
+      canvas.toBlob(blob=>{
+        const a=document.createElement("a");
+        a.href=URL.createObjectURL(blob);
+        a.download=`mentor-leaderboard-${stamp}.png`;
+        a.click();
+        setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+      },"image/png");
+    } else {
+      const { jsPDF }=window.jspdf;
+      const pdf=new jsPDF({orientation:"portrait", unit:"mm", format:"a4"});
+      const pageW=pdf.internal.pageSize.getWidth(), pageH=pdf.internal.pageSize.getHeight();
+      const margin=10, maxW=pageW-margin*2, maxH=pageH-margin*2;
+      let w=maxW, h=canvas.height*(w/canvas.width);
+      if(h>maxH){ h=maxH; w=canvas.width*(h/canvas.height); }
+      pdf.addImage(canvas.toDataURL("image/png"),"PNG",(pageW-w)/2,margin,w,h);
+      pdf.save(`mentor-leaderboard-${stamp}.pdf`);
+    }
+  }catch(err){
+    console.error(err);
+    alert("Couldn't export the leaderboard: "+err.message);
+  }finally{
+    btn.classList.remove("busy");
+  }
+}
 
 /* ---- load / refresh ---- */
 function load(){

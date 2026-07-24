@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mentor Recognition Dashboard</title>
+<title>Mentor  Dashboard</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,6 +33,14 @@
   --gold:#f4b731;
   --silver:#b7c0cc;
   --bronze:#cf8a4b;
+
+  /* rootme brand palette — same values as index.html */
+  --rm-black:#0b0b0e;
+  --rm-ink:#141318;
+  --rm-amber:#ffc400;
+  --rm-amber-d:#ff9d00;
+  --rm-stroke:rgba(255,196,0,.45);
+  --rm-graphite:#56535f;
 
   --shadow-sm:0 1px 2px rgba(17,24,39,.04), 0 1px 3px rgba(17,24,39,.05);
   --shadow-md:0 8px 24px -8px rgba(41,49,110,.18), 0 2px 8px -4px rgba(17,24,39,.08);
@@ -137,17 +145,33 @@ body.ready .reveal[data-d="7"]{animation-delay:.46s}
 
 /* Download control */
 .dl{position:relative}
-.dl-btn{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border-strong);border-radius:10px;padding:8px 13px;font:600 13px "Inter",sans-serif;color:var(--ink);cursor:pointer;box-shadow:var(--shadow-sm);transition:border-color .18s,color .18s,transform .18s var(--ease)}
-.dl-btn:hover{border-color:var(--indigo);color:var(--indigo);transform:translateY(-1px)}
-.dl-btn svg{width:15px;height:15px}
+.dl-btn{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border-strong);border-radius:10px;padding:8px 12px 8px 13px;font:600 13px "Inter",sans-serif;color:var(--ink);cursor:pointer;box-shadow:var(--shadow-sm);transition:border-color .18s,color .18s,box-shadow .18s,transform .18s var(--ease)}
+.dl-btn:hover{border-color:var(--indigo);color:var(--indigo);transform:translateY(-1px);box-shadow:0 8px 18px -10px rgba(91,91,240,.55)}
+.dl-btn.open{border-color:var(--indigo);color:var(--indigo)}
+.dl-btn .ic{width:15px;height:15px;flex:none}
+.dl-btn .cv{width:11px;height:11px;flex:none;opacity:.55;transition:transform .2s var(--ease)}
+.dl-btn.open .cv{transform:rotate(180deg)}
 .dl-btn.busy{opacity:.55;pointer-events:none}
-.dl-btn.busy svg{animation:spin .8s linear infinite}
-.dl-menu{position:absolute;right:0;top:calc(100% + 8px);background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);padding:6px;display:none;flex-direction:column;gap:2px;z-index:30;min-width:184px}
+.dl-btn.busy .ic{animation:spin .8s linear infinite}
+.dl-menu{position:absolute;right:0;top:calc(100% + 8px);background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);padding:12px;display:none;flex-direction:column;z-index:30;width:266px}
 .dl-menu.open{display:flex;animation:pop .16s var(--ease)}
 @keyframes pop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-.dl-menu button{display:flex;align-items:center;gap:10px;border:none;background:transparent;text-align:left;padding:9px 11px;border-radius:8px;font:500 13.5px "Inter",sans-serif;color:var(--ink);cursor:pointer;transition:background .15s,color .15s}
-.dl-menu button:hover{background:#f3f5fa;color:var(--indigo)}
-.dl-menu button .mi{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:14px;background:#eef1f7}
+.dl-sec-t{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:2px 2px 9px}
+.dl-chips{display:flex;flex-wrap:wrap;gap:6px}
+.dl-chips button{border:1px solid var(--border-strong);background:var(--surface);border-radius:9px;padding:6px 10px;font:600 12px "Inter",sans-serif;color:var(--muted);cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.dl-chips button:hover{border-color:var(--indigo);color:var(--indigo)}
+.dl-chips button.on{background:var(--indigo);border-color:var(--indigo);color:#fff}
+.dl-num{display:flex;align-items:center;gap:8px;margin-top:8px;border:1px solid var(--border-strong);border-radius:9px;padding:6px 11px;transition:border-color .15s}
+.dl-num:focus-within{border-color:var(--indigo)}
+.dl-num label{font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap}
+.dl-num input{width:100%;min-width:0;border:none;outline:none;background:transparent;font:600 13px "Inter",sans-serif;color:var(--ink)}
+.dl-num input::-webkit-outer-spin-button,.dl-num input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.dl-scope{display:block;margin:9px 2px 0;font-size:11.5px;font-weight:500;color:var(--faint)}
+.dl-div{height:1px;background:var(--border);margin:12px -12px}
+.dl-act{display:flex;align-items:center;gap:10px;width:100%;border:none;background:transparent;text-align:left;padding:9px 11px;border-radius:9px;font:600 13.5px "Inter",sans-serif;color:var(--ink);cursor:pointer;transition:background .15s,color .15s}
+.dl-act+.dl-act{margin-top:2px}
+.dl-act:hover{background:#f3f5fa;color:var(--indigo)}
+.dl-act .mi{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:14px;background:#eef1f7;flex:none}
 .chart-box{position:relative;height:360px}
 .chart-box.donut{height:300px}
 .donut-center{position:absolute;inset:0;display:grid;place-content:center;text-align:center;pointer-events:none}
@@ -161,10 +185,11 @@ body.ready .reveal[data-d="7"]{animation-delay:.46s}
 
 /* Leaderboard */
 .board{display:flex;flex-direction:column;gap:10px}
-.lb{display:grid;grid-template-columns:26px 40px 1fr auto;align-items:center;gap:12px;padding:9px 10px;border-radius:14px;border:1px solid transparent;transition:background .2s,border-color .2s}
+.lb{display:grid;grid-template-columns:32px 40px 1fr auto;align-items:center;gap:12px;padding:9px 10px;border-radius:14px;border:1px solid transparent;transition:background .2s,border-color .2s}
 .lb:hover{background:#f7f9fd;border-color:var(--border)}
-.rank{width:26px;text-align:center;font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:14px;color:var(--faint)}
-.lb.top1 .rank,.lb.top2 .rank,.lb.top3 .rank{color:var(--ink)}
+.rank{position:relative;width:32px;height:42px;color:var(--faint);background-repeat:no-repeat;background-position:center;background-size:contain}
+.rank b{position:absolute;left:0;right:0;top:13px;height:16px;line-height:16px;text-align:center;font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:14px;color:inherit}
+.lb.top1 .rank b,.lb.top2 .rank b,.lb.top3 .rank b{top:17px}
 .lb-ava{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:14px;overflow:hidden;position:relative;flex:none}
 .lb-ava img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .45s var(--ease)}
 .lb-ava img.on{opacity:1}
@@ -225,6 +250,64 @@ tbody tr:hover{background:#f7f9fd}
   tbody tr{opacity:1}
   .bar-fill{transition:none}
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Export card — built off-screen, captured for PNG / PDF.
+   Kept html2canvas-safe: no box-shadow, no object-fit, no
+   pseudo-elements. Avatars use background-size:cover, rings use
+   borders, and vertical centring uses line-height (not flex).
+   ───────────────────────────────────────────────────────────── */
+.export-stage{position:absolute;left:-20000px;top:0;z-index:-1;pointer-events:none}
+.ex-card{width:920px;background:#fff;color:var(--ink);font-family:"Inter",system-ui,sans-serif}
+
+/* header: logo hard left, title optically centred, count chip hard right.
+   1fr/auto/1fr keeps the title centred on the card no matter how wide
+   the logo or the chip get. Palette is the rootme brand: black + #ffc400. */
+.ex-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;padding:26px 40px;
+  color:#f5f3ee;border-bottom:3px solid var(--rm-amber);background:
+  radial-gradient(560px 320px at 86% -30%, rgba(255,196,0,.18), transparent 62%),
+  linear-gradient(120deg,#0b0b0e 0%,#141318 55%,#1c1b22 100%)}
+.ex-logo{height:38px;width:auto;display:block;justify-self:start}
+.ex-wordmark{justify-self:start;font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:28px;letter-spacing:-.025em;line-height:1}
+.ex-wordmark em{font-style:normal;color:var(--rm-amber)}
+.ex-title{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:26px;line-height:1.1;letter-spacing:-.02em;white-space:nowrap;text-align:center}
+.ex-chip{justify-self:end;border:1px solid var(--rm-stroke);background:rgba(255,196,0,.12);color:var(--rm-amber);border-radius:999px;padding:7px 15px;font-size:11.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap}
+
+.ex-body{padding:26px 40px 4px}
+.ex-hero{display:grid;grid-template-columns:46px 52px 1fr auto;align-items:center;gap:16px;padding:13px 16px;border-radius:18px;border:1px solid var(--border);background:#fbfcfe}
+.ex-hero+.ex-hero{margin-top:10px}
+.ex-hero.r1{border-color:rgba(255,196,0,.55);background:linear-gradient(100deg,rgba(255,196,0,.18),rgba(255,196,0,.03))}
+.ex-hero.r2{border-color:rgba(142,140,153,.45);background:linear-gradient(100deg,rgba(142,140,153,.15),rgba(142,140,153,.03))}
+.ex-hero.r3{border-color:rgba(217,154,78,.45);background:linear-gradient(100deg,rgba(217,154,78,.15),rgba(217,154,78,.03))}
+.ex-badge{position:relative;width:46px;height:60px;background-repeat:no-repeat;background-position:center;background-size:contain}
+.ex-badge b{position:absolute;left:0;right:0;top:25px;height:22px;line-height:22px;text-align:center;font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:19px;color:inherit}
+
+.ex-rows{margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.ex-row{display:grid;grid-template-columns:46px 52px 1fr auto;align-items:center;gap:16px;padding:9px 16px;border-radius:14px}
+.ex-row.alt{background:#f7f9fd}
+.ex-rank{text-align:center;font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:16px;color:var(--faint)}
+
+/* every avatar is the same size: the 3px border is always there, only its
+   colour changes for the top three, so the photo area never shifts */
+.ex-ava{box-sizing:border-box;width:52px;height:52px;border:3px solid transparent;border-radius:15px;line-height:46px;font-size:16px;background-size:cover;background-position:center;background-repeat:no-repeat;text-align:center;color:#fff;font-family:"Space Grotesk",sans-serif;font-weight:700;overflow:hidden}
+.ex-hero.r1 .ex-ava{border-color:var(--rm-amber)}
+.ex-hero.r2 .ex-ava{border-color:#c9c7d2}
+.ex-hero.r3 .ex-ava{border-color:#d99a4e}
+
+.ex-main{min-width:0}
+.ex-name{font-weight:700;font-size:18px;letter-spacing:-.012em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ex-row .ex-name{font-size:15px;font-weight:600}
+.ex-track{height:10px;border-radius:99px;background:#e9edf6;margin-top:10px;overflow:hidden}
+.ex-row .ex-track{height:8px;margin-top:8px}
+.ex-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#2a2930,var(--rm-graphite))}
+.ex-hero.r1 .ex-fill{background:linear-gradient(90deg,var(--rm-amber-d),var(--rm-amber))}
+.ex-val{text-align:right;font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:26px;line-height:1;letter-spacing:-.015em}
+.ex-row .ex-val{font-size:19px}
+.ex-val small{display:block;margin-top:6px;font:700 9.5px "Inter",sans-serif;letter-spacing:.14em;color:var(--faint)}
+.ex-empty{padding:44px;text-align:center;color:var(--faint);font-size:14px}
+
+.ex-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:20px;padding:15px 40px 24px;border-top:1px solid var(--border);font-size:11.5px;color:var(--faint);letter-spacing:.02em}
+.ex-foot b{font-weight:700;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -327,12 +410,27 @@ tbody tr:hover{background:#f7f9fd}
           <span class="panel-note" id="boardNote">all mentors</span>
           <div class="dl" data-html2canvas-ignore="true">
             <button class="dl-btn" id="dlBtn" title="Download leaderboard">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Download
+              <svg class="cv" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <div class="dl-menu" id="dlMenu">
-              <button data-fmt="png"><span class="mi">🖼️</span>Image (PNG)</button>
-              <button data-fmt="pdf"><span class="mi">📄</span>PDF document</button>
+              <span class="dl-sec-t">How many mentors</span>
+              <div class="dl-chips" id="dlChips">
+                <button data-n="3">Top 3</button>
+                <button data-n="5">Top 5</button>
+                <button data-n="8">Top 8</button>
+                <button data-n="10" class="on">Top 10</button>
+                <button data-n="0">All</button>
+              </div>
+              <div class="dl-num">
+                <label for="dlNum">Custom</label>
+                <input id="dlNum" type="number" min="1" max="200" inputmode="numeric" placeholder="e.g. 12">
+              </div>
+              <span class="dl-scope" id="dlScope">—</span>
+              <div class="dl-div"></div>
+              <button class="dl-act" data-fmt="png"><span class="mi">🖼️</span>Image (PNG)</button>
+              <button class="dl-act" data-fmt="pdf"><span class="mi">📄</span>PDF document</button>
             </div>
           </div>
         </div>
@@ -382,6 +480,8 @@ if(window.Chart){ Chart.defaults.font.family="'Inter', sans-serif"; Chart.defaul
 let barChart, donutChart;
 let ALL = [];                                   // all valid rows
 const state = { space:"all", batch:"all", q:"all" };
+let LAST = { ranked:[], total:0 };              // last rendered ranking, reused by the exporter
+let dlCount = 10;                               // mentors in the download (0 = all)
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -430,6 +530,61 @@ function mountAvatars(root){
     });
   });
 }
+
+/* ---- brand logo for the download card (first candidate that loads wins) ---- */
+/* tightly-cropped wordmarks first — a square, heavily padded logo renders tiny at a fixed height */
+const LOGO_CANDIDATES=["images/logo.svg","images/logo.png","images/logo.webp","images/logo.jpg",
+                       "logo/logo.png","logo/rootme logo (1).png"];
+let LOGO_URL;                          // undefined = not looked up yet, null = none found
+function resolveLogo(){
+  if(LOGO_URL!==undefined) return Promise.resolve(LOGO_URL);
+  return new Promise(done=>{
+    (function tryAt(i){
+      if(i>=LOGO_CANDIDATES.length){ LOGO_URL=null; return done(null); }
+      const url=encodeURI(LOGO_CANDIDATES[i]), im=new Image();
+      im.onload  = ()=>{ if(im.naturalWidth>1){ LOGO_URL=url; done(url); } else tryAt(i+1); };
+      im.onerror = ()=> tryAt(i+1);
+      im.src=url;
+    })(0);
+  });
+}
+
+/* ---- rank badges: crowned shield for #1, plain shields for #2/#3 ----
+   Drawn as a self-contained SVG data-URI so the glow survives export —
+   html2canvas ignores CSS box-shadow/filter, but rasterises SVG filters. */
+const SHIELD="M30,52 L98,52 Q106,52 106,60 L106,104 Q106,122 92,131 L70,145 Q64,149 58,145 L36,131 Q22,122 22,104 L22,60 Q22,52 30,52 Z";
+const CROWN ="M42,52 L44,22 L55,33 L64,14 L73,33 L84,22 L86,52 Z";
+/* brand tones: gold #1 (black numeral on rootme yellow), then graphite and tan */
+const RANK_TONE=[
+  {a:"#ffd75e", b:"#ffb000", glow:"#ffc400", go:.85, sd:9, crown:"#ff9d00", ink:"#141318"},
+  {a:"#f4f4f7", b:"#dcdce2", glow:"#8e8c99", go:.42, sd:7, crown:null,      ink:"#4a4854"},
+  {a:"#fdeada", b:"#f2d2a6", glow:"#d99a4e", go:.40, sd:7, crown:null,      ink:"#a06a24"}
+];
+const BADGE=new Map();
+function rankBadge(i){
+  if(BADGE.has(i)) return BADGE.get(i);
+  const t=RANK_TONE[i];
+  const crown = c => `<path d="${CROWN}" fill="${c}" stroke="${c}" stroke-width="5" stroke-linejoin="round"/>`;
+  const svg=
+    `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="168" viewBox="0 0 128 168">`+
+      `<defs>`+
+        `<linearGradient id="f" x1="0" y1="0" x2="0" y2="1">`+
+          `<stop offset="0" stop-color="${t.a}"/><stop offset="1" stop-color="${t.b}"/></linearGradient>`+
+        `<filter id="g" x="-60%" y="-60%" width="220%" height="220%">`+
+          `<feGaussianBlur stdDeviation="${t.sd}"/></filter>`+
+      `</defs>`+
+      `<g filter="url(#g)" opacity="${t.go}">`+
+        `<path d="${SHIELD}" fill="${t.glow}"/>`+(t.crown?crown(t.glow):"")+`</g>`+
+      (t.crown?crown(t.crown):"")+
+      `<path d="${SHIELD}" fill="url(#f)"/>`+
+    `</svg>`;
+  const url=`url('data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg).replace(/'/g,"%27")}')`;
+  BADGE.set(i,url);
+  return url;
+}
+const rankCell = i => i<3
+  ? `<span class="rank" style="background-image:${rankBadge(i)};color:${RANK_TONE[i].ink}"><b>${i+1}</b></span>`
+  : `<span class="rank"><b>${i+1}</b></span>`;
 
 function countUp(el, target, dur=900){
   if(reduceMotion){ el.textContent=target.toLocaleString(); return; }
@@ -489,6 +644,8 @@ function render(){
   $("rtm7-foot").textContent = Math.round(rtm7/total*100)+"% of view";
 
   const ranked = Object.entries(mentors).sort((a,b)=>b[1]-a[1]);
+  LAST = { ranked, total:data.length };
+  syncDl();
   const topName = ranked.length ? ranked[0][0] : "—";
   $("top").textContent = topName; $("top").title = topName;
   $("top-foot").textContent = ranked.length
@@ -538,14 +695,18 @@ function render(){
     <span class="leg-v">${dD[i]} · ${Math.round(dD[i]/total*100)}%</span></div>`).join("");
 
   /* Leaderboard — all mentors */
+  /* display-only name fixes for this list; photos, tallies, charts,
+     the table and the download card all keep the sheet's own spelling */
+  const LB_ALIAS = { "shahl mohamed":"Shahal Muhammed", "shahl mohammed":"Shahal Muhammed" };
+  const lbName = n => LB_ALIAS[n.trim().toLowerCase()] || n;
   const maxV = ranked.length ? ranked[0][1] : 1;
   $("boardNote").textContent = ranked.length ? ranked.length+" mentors" : "no data";
   $("board").innerHTML = ranked.length ? ranked.map(([name,v],i)=>`
     <div class="lb ${i<3?'top'+(i+1):''}">
-      <span class="rank">${i+1}</span>
+      ${rankCell(i)}
       <div class="lb-ava" data-name="${esc(name)}" style="background:${gradOf(name)}">${esc(initials(name))}</div>
       <div class="lb-main">
-        <div class="lb-name">${esc(name)}</div>
+        <div class="lb-name">${esc(lbName(name))}</div>
         <div class="bar-track"><div class="bar-fill" data-w="${Math.round(v/maxV*100)}"></div></div>
       </div>
       <div class="lb-val">${v}<small>VOTES</small></div>
@@ -612,47 +773,155 @@ $("resetBtn").addEventListener("click", ()=>{
 });
 
 /* ---- download leaderboard (PNG / PDF) ---- */
-$("dlBtn").addEventListener("click", e=>{ e.stopPropagation(); $("dlMenu").classList.toggle("open"); });
-document.addEventListener("click", e=>{ if(!e.target.closest(".dl")) $("dlMenu").classList.remove("open"); });
-$("dlMenu").addEventListener("click", e=>{
+const EXPORT_SCALE = 3;                          // 920px card → 2760px wide PNG
+
+$("dlBtn").addEventListener("click", e=>{
+  e.stopPropagation();
+  const open=$("dlMenu").classList.toggle("open");
+  $("dlBtn").classList.toggle("open", open);
+});
+document.addEventListener("click", e=>{
+  if(e.target.closest(".dl")) return;
+  $("dlMenu").classList.remove("open"); $("dlBtn").classList.remove("open");
+});
+$("dlChips").addEventListener("click", e=>{
   const b=e.target.closest("button"); if(!b) return;
+  dlCount=+b.dataset.n; $("dlNum").value=""; syncDl();
+});
+$("dlNum").addEventListener("input", e=>{
+  const v=parseInt(e.target.value,10);
+  if(Number.isFinite(v)&&v>0) dlCount=v;
+  syncDl(true);
+});
+$("dlMenu").addEventListener("click", e=>{
+  const b=e.target.closest(".dl-act"); if(!b) return;
   exportLeaderboard(b.dataset.fmt);
 });
 
-async function exportLeaderboard(fmt){
-  const node=$("lbPanel"), btn=$("dlBtn");
-  $("dlMenu").classList.remove("open");
-  btn.classList.add("busy");
-  try{
-    /* make sure all mentor photos have finished loading */
-    await Promise.all([...node.querySelectorAll("img")].map(img=>
-      img.complete ? Promise.resolve() : new Promise(r=>{ img.onload=img.onerror=r; })));
+/* rows that go into the download, honouring the chosen count */
+const exportRows = () => LAST.ranked.slice(0, dlCount>0 ? dlCount : LAST.ranked.length);
 
-    const canvas=await html2canvas(node,{scale:2, backgroundColor:"#ffffff", useCORS:true, logging:false});
+/* keep the picker chips + "Top 8 of 21" hint in sync */
+function syncDl(fromInput){
+  const chips=$("dlChips").querySelectorAll("button");
+  chips.forEach(b=> b.classList.toggle("on", !fromInput && +b.dataset.n===dlCount));
+  const total=LAST.ranked.length, n=exportRows().length;
+  $("dlScope").textContent = !total ? "Nothing to download yet"
+    : n<total ? `Downloading top ${n} of ${total} trainers`
+              : `Downloading all ${total} trainers`;
+}
+
+/* builds the branded leaderboard card that actually gets captured */
+function buildExportCard(logoUrl){
+  const list=exportRows(), total=LAST.ranked.length;
+  const maxV=list.length ? list[0][1] : 1;
+
+  /* photos are pre-resolved, so PHOTO already holds a url or null */
+  const avaStyle = n => { const p=PHOTO.get(n);
+    return p ? `background-image:url('${p}');background-color:#dfe5f0` : `background:${gradOf(n)}`; };
+  const avaText  = n => PHOTO.get(n) ? "" : esc(initials(n));
+  const width    = (v,min) => Math.max(min, Math.round(v/maxV*100));
+
+  const hero = list.slice(0,3).map(([name,v],i)=>`
+    <div class="ex-hero r${i+1}">
+      <div class="ex-badge" style="background-image:${rankBadge(i)};color:${RANK_TONE[i].ink}"><b>${i+1}</b></div>
+      <div class="ex-ava" style="${avaStyle(name)}">${avaText(name)}</div>
+      <div class="ex-main">
+        <div class="ex-name">${esc(name)}</div>
+        <div class="ex-track"><div class="ex-fill" style="width:${width(v,8)}%"></div></div>
+      </div>
+      <div class="ex-val">${v}<small>VOTES</small></div>
+    </div>`).join("");
+
+  const rest = list.slice(3).map(([name,v],i)=>`
+    <div class="ex-row${i%2?" alt":""}">
+      <div class="ex-rank">${i+4}</div>
+      <div class="ex-ava" style="${avaStyle(name)}">${avaText(name)}</div>
+      <div class="ex-main">
+        <div class="ex-name">${esc(name)}</div>
+        <div class="ex-track"><div class="ex-fill" style="width:${width(v,5)}%"></div></div>
+      </div>
+      <div class="ex-val">${v}<small>VOTES</small></div>
+    </div>`).join("");
+
+  const stamp=new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
+
+  return `<div class="ex-card">
+    <div class="ex-head">
+      ${logoUrl ? `<img class="ex-logo" src="${logoUrl}" alt="rootme">`
+                : `<div class="ex-wordmark">root<em>me</em></div>`}
+      <div class="ex-title">Trainer Leaderboard</div>
+      <span class="ex-chip">${list.length<total ? `Top ${list.length}` : `All ${total} trainers`}</span>
+    </div>
+    <div class="ex-body">
+      ${list.length ? hero + (rest?`<div class="ex-rows">${rest}</div>`:"")
+                    : `<div class="ex-empty">No votes in this view.</div>`}
+    </div>
+    <div class="ex-foot">
+      <span>Generated ${stamp} · live from the RootMe responses sheet</span><b>rootme</b>
+    </div>
+  </div>`;
+}
+
+async function exportLeaderboard(fmt){
+  const btn=$("dlBtn");
+  $("dlMenu").classList.remove("open"); btn.classList.remove("open");
+  if(!LAST.ranked.length){ alert("Nothing to download — there are no votes in this view."); return; }
+  btn.classList.add("busy");
+
+  let stage=null;
+  try{
+    /* resolve every asset the card needs *before* it is built */
+    const [logoUrl] = await Promise.all([ resolveLogo(), ...exportRows().map(r=>resolvePhoto(r[0])) ]);
+    if(document.fonts && document.fonts.ready) await document.fonts.ready;
+
+    stage=document.createElement("div");
+    stage.className="export-stage";
+    stage.innerHTML=buildExportCard(logoUrl);
+    document.body.appendChild(stage);
+
+    /* logo bitmap decoded + two frames so layout/backgrounds settle */
+    await Promise.all([...stage.querySelectorAll("img")].map(img=>
+      img.complete && img.naturalWidth ? null : new Promise(r=>{ img.onload=img.onerror=r; })));
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+    const card=stage.firstElementChild;
+    const canvas=await html2canvas(card,{
+      scale:EXPORT_SCALE, backgroundColor:"#ffffff", useCORS:true,
+      logging:false, imageTimeout:0,
+      width:card.offsetWidth, height:card.offsetHeight
+    });
+
+    const n=exportRows().length;
+    const tag=n<LAST.ranked.length ? `top${n}-` : "";
     const stamp=new Date().toISOString().slice(0,10);
+    const file=`rootme-leaderboard-${tag}${stamp}`;
 
     if(fmt==="png"){
-      canvas.toBlob(blob=>{
+      await new Promise(done=> canvas.toBlob(blob=>{
         const a=document.createElement("a");
         a.href=URL.createObjectURL(blob);
-        a.download=`mentor-leaderboard-${stamp}.png`;
+        a.download=file+".png";
         a.click();
         setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-      },"image/png");
+        done();
+      },"image/png"));
     } else {
       const { jsPDF }=window.jspdf;
-      const pdf=new jsPDF({orientation:"portrait", unit:"mm", format:"a4"});
+      const portrait=canvas.height>=canvas.width;
+      const pdf=new jsPDF({orientation:portrait?"portrait":"landscape", unit:"mm", format:"a4", compress:true});
       const pageW=pdf.internal.pageSize.getWidth(), pageH=pdf.internal.pageSize.getHeight();
       const margin=10, maxW=pageW-margin*2, maxH=pageH-margin*2;
       let w=maxW, h=canvas.height*(w/canvas.width);
       if(h>maxH){ h=maxH; w=canvas.width*(h/canvas.height); }
-      pdf.addImage(canvas.toDataURL("image/png"),"PNG",(pageW-w)/2,margin,w,h);
-      pdf.save(`mentor-leaderboard-${stamp}.pdf`);
+      pdf.addImage(canvas.toDataURL("image/png"),"PNG",(pageW-w)/2,(pageH-h)/2,w,h,undefined,"FAST");
+      pdf.save(file+".pdf");
     }
   }catch(err){
     console.error(err);
     alert("Couldn't export the leaderboard: "+err.message);
   }finally{
+    if(stage) stage.remove();
     btn.classList.remove("busy");
   }
 }

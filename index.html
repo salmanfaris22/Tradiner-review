@@ -467,30 +467,47 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwT76wasY01kn3axHWH7
 const TRAINERS = [                 // ഇവിടെ പേരുകൾ ചേർക്കുക / മാറ്റുക
   "Abdu Rahoof",
   "Abdul Samad",
+  "Abhinand K",
+  "Ajeer",
   "Ajmal",
+  "Alan Thomas",
+  "Ameen M",
+  "Anadu",
   // "Ansaf Av",
   // "Arjun K",
+  "Ashik Sajeev",
   "Ashin Ambrose P",
   "Aslam",
   "Aswanth S Vinod",
+  "Athul P Anil",
+  "Deepak roy A",
+  "Irfan",
   "Irfaq",
   "Jishnu",
+  "Midhun MP",
+  "Midlaj",
+  "Murshid Sha",
   "Pranav Joshy",
+  "Razal KP",
   "Rifa K",
   "Riya",
   // "Sahal K sudheer",
   "Shahl Mohamed",
   "Shaneeb",
+  "Shanif K K",
+  "Shefin K",
   "Shihan",
   "Shuhaib",
+  "Sinan A S",
   "Sonu N",
+  "Soorya",
   "Sridhun",
   "Yahid K"
 ];
 
 /* 3️⃣  ബാച്ച് (സമയം) & സ്പേസ് — ചോദ്യങ്ങൾക്ക് മുൻപ് ചോദിക്കുന്നു */
-const BATCHES = ["9 AM - 12 PM", "12 PM - 3 PM", "3 PM - 6 PM", "6 PM - 9 PM"];
-const SPACES  = ["RTM4", "RTM7"];
+const BATCHES = ["WTC 9 to 12", "WTC 12 to 3", "WTC 3 to 6", "WTC 6 to 9"];
+const SPACES  = ["WTC"];
 
 /* 4️⃣  ലോഗോ:  images/logo.png  (svg / jpg / webp ഉം ആകാം) ഇട്ടാൽ
    ഹെഡ്ഡറിൽ അത് താനേ വരും. ഇല്ലെങ്കിൽ CSS-ൽ വരച്ച "me" ലോഗോ കാണിക്കും. */
@@ -777,6 +794,14 @@ function renderChips(el, items, key){
 }
 renderChips($("#batchChips"), BATCHES, "batch");
 renderChips($("#spaceChips"), SPACES,  "space");
+
+/* ഒരൊറ്റ ഓപ്ഷൻ മാത്രമാണെങ്കിൽ അത് താനേ സെലക്ട് ആകും */
+function autoPickSingle(el, key){
+  const chips = el.querySelectorAll(".chip");
+  if(chips.length === 1){ chips[0].classList.add("sel"); state[key] = chips[0].dataset.v; }
+}
+autoPickSingle($("#batchChips"), "batch");
+autoPickSingle($("#spaceChips"), "space");
 
 $("#btnStart").addEventListener("click",()=>{
   if(!state.batch){ toast("Please select your batch"); $("#batchChips").scrollIntoView({block:"center",behavior:"smooth"}); return; }

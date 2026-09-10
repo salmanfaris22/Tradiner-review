@@ -217,6 +217,7 @@ tbody tr:hover{background:#f7f9fd}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:600}
 .pill.rtm4{background:rgba(91,91,240,.10);color:var(--indigo)}
 .pill.rtm7{background:rgba(18,179,166,.12);color:#0f9d92}
+.pill.wtc{background:rgba(139,92,246,.12);color:#7c3aed}
 .pill.other{background:#eef1f7;color:var(--muted)}
 .time-cell{color:var(--muted);white-space:nowrap}
 
@@ -337,8 +338,6 @@ tbody tr:hover{background:#f7f9fd}
       <span class="flabel">Space</span>
       <div class="seg" id="segSpace">
         <button data-v="all" class="on">All</button>
-        <button data-v="RTM4">RTM4</button>
-        <button data-v="RTM7">RTM7</button>
       </div>
     </div>
     <div class="fgroup">
@@ -366,14 +365,14 @@ tbody tr:hover{background:#f7f9fd}
       <div class="kpi-foot" id="total-foot">in current view</div>
     </div>
     <div class="kpi teal reveal" data-d="3">
-      <div class="kpi-top"><span class="kpi-label">RTM4</span><span class="kpi-ico">🏫</span></div>
-      <div class="kpi-num" id="rtm4">0</div>
-      <div class="kpi-foot" id="rtm4-foot">responses</div>
+      <div class="kpi-top"><span class="kpi-label" id="spA-label">Space</span><span class="kpi-ico">🏫</span></div>
+      <div class="kpi-num" id="spA">0</div>
+      <div class="kpi-foot" id="spA-foot">responses</div>
     </div>
     <div class="kpi teal reveal" data-d="4">
-      <div class="kpi-top"><span class="kpi-label">RTM7</span><span class="kpi-ico">🏫</span></div>
-      <div class="kpi-num" id="rtm7">0</div>
-      <div class="kpi-foot" id="rtm7-foot">responses</div>
+      <div class="kpi-top"><span class="kpi-label" id="spB-label">Space</span><span class="kpi-ico">🏫</span></div>
+      <div class="kpi-num" id="spB">0</div>
+      <div class="kpi-foot" id="spB-foot">responses</div>
     </div>
     <div class="kpi amber reveal" data-d="5">
       <div class="kpi-top"><span class="kpi-label">Top Mentor</span><span class="kpi-ico">🏆</span></div>
@@ -462,7 +461,7 @@ tbody tr:hover{background:#f7f9fd}
 const SHEET_URL =
 "https://docs.google.com/spreadsheets/d/1u7Tk3IDzA8PSiphlrAz6bl_KtqdrT_fcAtEBXXBrVjM/export?format=csv&gid=1133826034";
 
-/* Real sheet columns: Timestamp, Batch (time slot), Space (RTM4/RTM7), Q1..Q4, User Agent */
+/* Real sheet columns: Timestamp, Batch (time slot), Space (WTC / RTM4 / RTM7 …), Q1..Q4, User Agent */
 const F = { time:"Batch", space:"Space", stamp:"Timestamp" };
 const QCOLS = [
   {key:"Q1 - എളുപ്പത്തിൽ സമീപിക്കാനാകുന്ന മെന്റർ",  short:"Approachable", icon:"🤝"},
@@ -470,9 +469,13 @@ const QCOLS = [
   {key:"Q3 - ക്ഷമയോടെ സംശയം പരിഹരിക്കുന്ന മെന്റർ",   short:"Patient Support", icon:"🧩"},
   {key:"Q4 - മുന്നോട്ട് പോകാൻ പ്രോത്സാഹിപ്പിക്കുന്ന മെന്റർ", short:"Motivator", icon:"🚀"},
 ];
-const TIME_ORDER = ["9 AM - 12 PM","12 PM - 3 PM","3 PM - 6 PM","6 PM - 9 PM"];
+/* അറിയാവുന്ന ക്രമം — ഇതിൽ ഇല്ലാത്ത പുതിയ വാല്യൂകളും ഷീറ്റിൽ നിന്ന് താനേ വരും */
+const TIME_ORDER = ["WTC 9 to 12","WTC 12 to 3","WTC 3 to 6","WTC 6 to 9",
+                    "9 AM - 12 PM","12 PM - 3 PM","3 PM - 6 PM","6 PM - 9 PM"];
+const SPACE_ORDER = ["WTC","RTM4","RTM7"];
 
 const C = {indigo:"#5b5bf0", violet:"#8b5cf6", teal:"#12b3a6", amber:"#f59e0b"};
+const SPACE_COLORS = ["#5b5bf0","#12b3a6","#8b5cf6","#f59e0b","#ec4899","#64748b"];
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 if(window.Chart){ Chart.defaults.font.family="'Inter', sans-serif"; Chart.defaults.color="#6b7280"; }
@@ -624,24 +627,30 @@ function render(){
   const cols = activeQCols();
 
   /* tallies */
-  let rtm4=0, rtm7=0;
+  const spaceCounts={};
   const mentors={};
   const perQ = QCOLS.map(()=>({}));
   data.forEach(r=>{
-    const sp=(r[F.space]||"").trim();
-    if(sp==="RTM4") rtm4++; else if(sp==="RTM7") rtm7++;
+    const sp=(r[F.space]||"").trim() || "Other";
+    spaceCounts[sp] = (spaceCounts[sp]||0)+1;
     QCOLS.forEach((q,i)=>{ const m=(r[q.key]||"").trim(); if(m) perQ[i][m]=(perQ[i][m]||0)+1; });
     cols.forEach(q=>{ const m=(r[q.key]||"").trim(); if(m) mentors[m]=(mentors[m]||0)+1; });
   });
 
   /* KPIs */
   countUp($("total"), data.length);
-  countUp($("rtm4"), rtm4);
-  countUp($("rtm7"), rtm7);
   const total = data.length || 1;
   $("total-foot").textContent = state.q==="all" ? "in current view" : QCOLS[+state.q].short;
-  $("rtm4-foot").textContent = Math.round(rtm4/total*100)+"% of view";
-  $("rtm7-foot").textContent = Math.round(rtm7/total*100)+"% of view";
+
+  /* ഏറ്റവും കൂടുതൽ റെസ്പോൺസ് ഉള്ള രണ്ട് സ്പേസ് KPI കാർഡിൽ കാണിക്കുന്നു */
+  const spaceRank = Object.entries(spaceCounts)
+    .sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0]));
+  ["spA","spB"].forEach((id,i)=>{
+    const e = spaceRank[i];
+    $(id+"-label").textContent = e ? e[0] : "Space";
+    countUp($(id), e ? e[1] : 0);
+    $(id+"-foot").textContent = e ? Math.round(e[1]/total*100)+"% of view" : "no responses";
+  });
 
   const ranked = Object.entries(mentors).sort((a,b)=>b[1]-a[1]);
   LAST = { ranked, total:data.length };
@@ -677,9 +686,9 @@ function render(){
   } else { $("barChart").getContext("2d").clearRect(0,0,9999,9999); }
 
   /* Donut — Space split within filtered rows */
-  const other = data.length - rtm4 - rtm7;
-  const dL=["RTM4","RTM7"], dD=[rtm4,rtm7], dC=[C.indigo,C.teal];
-  if(other>0){ dL.push("Other"); dD.push(other); dC.push("#c7cedb"); }
+  const dL=spaceRank.map(e=>e[0]);
+  const dD=spaceRank.map(e=>e[1]);
+  const dC=spaceRank.map((e,i)=> e[0]==="Other" ? "#c7cedb" : SPACE_COLORS[i%SPACE_COLORS.length]);
   $("donutTotal").textContent = data.length;
   if(donutChart) donutChart.destroy();
   donutChart = new Chart($("donutChart"), {
@@ -719,7 +728,8 @@ function render(){
   /* Responses table — latest 20 of filtered rows */
   const recent = data.slice(-20).reverse();
   $("tableNote").textContent = "showing "+recent.length+" of "+data.length;
-  const spClass = b => b==="RTM4"?"rtm4":b==="RTM7"?"rtm7":"other";
+  const SP_CLASS = { RTM4:"rtm4", RTM7:"rtm7", WTC:"wtc" };
+  const spClass = b => SP_CLASS[b] || "other";
   $("tableBody").innerHTML = recent.length ? recent.map((r,i)=>`
     <tr style="animation-delay:${reduceMotion?0:i*0.028}s">
       <td><span class="pill ${spClass((r[F.space]||"").trim())}">${esc(r[F.space]||"—")}</span></td>
@@ -750,8 +760,19 @@ function render(){
 function buildBatchOptions(){
   const set=[...new Set(ALL.filter(valid).map(r=>(r[F.time]||"").trim()).filter(Boolean))];
   set.sort((a,b)=>{ const ia=TIME_ORDER.indexOf(a), ib=TIME_ORDER.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib) || a.localeCompare(b); });
+  if(state.batch!=="all" && set.indexOf(state.batch)<0) state.batch="all";   // പഴയ ഫിൽട്ടർ ഇല്ലെങ്കിൽ റീസെറ്റ്
   const sel=$("selBatch");
   sel.innerHTML = `<option value="all">All times</option>` + set.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join("");
+  sel.value = state.batch;
+}
+function buildSpaceOptions(){
+  const set=[...new Set(ALL.filter(valid).map(r=>(r[F.space]||"").trim()).filter(Boolean))];
+  set.sort((a,b)=>{ const ia=SPACE_ORDER.indexOf(a), ib=SPACE_ORDER.indexOf(b);
+                    return (ia<0?99:ia)-(ib<0?99:ib) || a.localeCompare(b); });
+  if(state.space!=="all" && set.indexOf(state.space)<0) state.space="all";   // പഴയ ഫിൽട്ടർ ഇല്ലെങ്കിൽ റീസെറ്റ്
+  $("segSpace").innerHTML =
+    `<button data-v="all"${state.space==="all"?' class="on"':''}>All</button>`
+    + set.map(v=>`<button data-v="${esc(v)}"${state.space===v?' class="on"':''}>${esc(v)}</button>`).join("");
 }
 function wireSeg(id, key){
   $(id).addEventListener("click", e=>{
@@ -934,6 +955,7 @@ function load(){
     complete: res => {
       ALL = (res.data||[]).filter(valid);
       buildBatchOptions();
+      buildSpaceOptions();
       render();
       $("updated").textContent = "Updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})+" · "+ALL.length+" responses";
       setLoading(false);
